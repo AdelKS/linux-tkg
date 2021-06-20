@@ -135,7 +135,6 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 - `_dracut_options` is a variable that can be changed in `customization.cfg`.
 - The script uses a base `.config` file. Its path can be provided through `_configfile` in `customization.cfg`. Otherwise ``/boot/config-`uname -r`.config``, ``/proc/config.gz`` or a "vanilla" upstream `.config` file is used.
 - The installed files will not be tracked by your package manager and uninstalling requires manual intervention. `./install.sh uninstall-help` can help with useful information if your install procedure follows the `Generic` approach.
-
 #### Gentoo
 The interactive `install.sh` script supports Gentoo by following the same procedure as `Generic`. Then does the necessary steps to build out-of-tree modules through `emerge @module-rebuild`.
 ```
@@ -155,56 +154,3 @@ cd linux-tkg
 # Optional: edit the "customization.cfg" file
 ./install.sh config
 ```
-
-
-
-
-
-
-#### Other distributions
-`linux-tkg` supports various distributions and are prompted by its interactive `install.sh` script:
-```shell
-git clone https://github.com/Frogging-Family/linux-tkg.git
-cd linux-tkg
-# Optional: edit the "customization.cfg" file
-./install.sh install
-```
-The following distributions are supported:
-- DEB based (Debian, Ubuntu and derivatives): creates `.deb` packages in the subfolder `DEBS` then prompts to install them with the distro's package manager.
-- RPM based (Fedora, SUSE and derivatives): creates `.rpm` packages in the subfolder `RPMS` then prompts to install them with the distro's package manager.
-- Gentoo
-By default, the script will use the `.config` file of the currently running kernel as a base. It is expected either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` otherwise it defaults the the "vanilla" upstream `.config` file. To provide you own `.config` file is possible through the variable `_configfile` in `customization.cfg`.
-
-For unsupported distributions, `install.sh` script can clone the kernel tree in the `linux-src-git` folder, patch and edit a `.config` file based on the currently running kernel: it is expected either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` (otherwise it won't work as-is).
-
-To do so, run:
-```
-git clone https://github.com/Frogging-Family/linux-tkg.git
-# Optional: edit the "customization.cfg" file
-./install.sh config
-```
-
-Uninstalling custom kernels installed through the script has to be done
-manually. The script can can help out with some useful information:
-```
-cd path/to/linux-tkg
-./install.sh uninstall-help
-```
-
-**More information:**
-
-
-- The script will use your current kernel's `.config` file, which will be searched for either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` (otherwise the script won't work as-is). It's recommended to run the script booted on your distro-provided kernel.
-
-
-If your distro is neither DEB nor RPM based, 
-
-When selecting `Generic` as distro, `./install.sh install` will compile the kernel then prompt before doing the following:
-```shell
-sudo make modules_install
-sudo make headers_install INSTALL_HDR_PATH=/usr # CAUTION: this will replace files in /usr/include
-sudo make install
-sudo dracut --force --hostonly --kver $_kernelname
-sudo grub-mkconfig -o /boot/grub/grub.cfg
-```
-**Note:** these changes will not be tracked by your package manager and uninstalling requires manual intervention. `./install.sh uninstall-help` can help with useful information if your install procedure follows the `Generic` approach.
