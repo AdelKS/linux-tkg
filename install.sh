@@ -29,7 +29,7 @@ plain() {
 _distro_prompt() {
   echo "Which linux distribution are you running ?"
   echo "if it's not on the list, chose the closest one to it: Fedora/Suse for RPM, Ubuntu/Debian for DEB"
-  _prompt_from_array "Debian" "Fedora" "Suse" "Ubuntu" "Generic"
+  _prompt_from_array "Debian" "Fedora" "Suse" "Ubuntu" "Gentoo" "Generic"
   _distro="${_selected_value}"
 }
 
@@ -199,10 +199,9 @@ if [ "$1" = "install" ] || [ "$1" = "config" ]; then
     fi
   fi
 
-  if [[ $1 = "install" && ! "$_distro" =~ ^(Ubuntu|Debian|Fedora|Suse|Generic)$ ]]; then
-    msg2 "Variable \"_distro\" in \"customization.cfg\" hasn't been set to \"Ubuntu\", \"Debian\",  \"Fedora\" or \"Suse\""
-    msg2 "This script can only install custom kernels for RPM and DEB based distros, though only those keywords are permitted. Exiting..."
-    exit 0
+  if [[ $1 = "install" && ! "$_distro" =~ ^(Ubuntu|Debian|Fedora|Suse|Gentoo|Generic)$ ]]; then
+    msg2 "Variable \"_distro\" in \"customization.cfg\" has been set to an unkown value. Prompting..."
+    _distro_prompt
   fi
 
   # Install the needed dependencies if the user wants to install the kernel
@@ -407,11 +406,12 @@ if [ "$1" = "install" ]; then
       fi
     fi
 
-  elif [ "$_distro" = "Generic" ]; then
+  elif [[ "$_distro" =~ ^(Gentoo|Generic)$ ]]; then
 
     ./scripts/config --set-str LOCALVERSION "-${_kernel_flavor}"
 
-    if make ${llvm_opt} -j ${_thread_num}; then
+    if [ "0" = "0" ]; then
+    # if make ${llvm_opt} -j ${_thread_num}; then
 
       if [[ "$_sub" = rc* ]]; then
         _kernelname=$_basekernel.${_kernel_subver}-${_sub}-$_kernel_flavor
@@ -419,18 +419,21 @@ if [ "$1" = "install" ]; then
         _kernelname=$_basekernel.${_kernel_subver}-$_kernel_flavor
       fi
 
-      msg2 "Building successful"
-      msg2 "The installation process will run the following commands:"
-      echo "    sudo make modules_install"
-      echo "    sudo make headers_install INSTALL_HDR_PATH=/usr # CAUTION: this will replace files in /usr/include"
-      echo "    sudo make install"
-      echo "    sudo dracut --hostonly --kver $_kernelname"
-      echo "    sudo grub-mkconfig -o /boot/grub/grub.cfg"
-      msg2 "Note: Uninstalling requires manual intervention, use './install.sh uninstall-help' for more information."
-      read -p "Continue ? [Y/n]: " _continue
+      if [ "$_distro" = "Generic" ]; then
+        msg2 "Building successful"
+        msg2 "The installation process will run the following commands:"
+        echo "    sudo make modules_install"
+        echo "    sudo make headers_install INSTALL_HDR_PATH=/usr # CAUTION: this will replace files in /usr/include"
+        echo "    sudo make install"
+        echo "    sudo dracut --hostonly --kver $_kernelname"
+        echo "    sudo grub-mkconfig -o /boot/grub/grub.cfg"
 
-      if ! [[ $_continue =~ ^(Y|y|Yes|yes)$ ]];then
-        exit 0
+        msg2 "Note: Uninstalling requires manual intervention, use './install.sh uninstall-help' for more information."
+        read -p "Continue ? [Y/n]: " _continue
+
+        if ! [[ $_continue =~ ^(Y|y|Yes|yes)$ ]];then
+          exit 0
+        fi
       fi
 
       msg2 "Installing modules"
@@ -440,9 +443,27 @@ if [ "$1" = "install" ]; then
       msg2 "Installing kernel"
       sudo make install
       msg2 "Creating initramfs"
-      sudo dracut --force --hostonly --kver $_kernelname
+      sudo dracut --force --hostonly --lz4 --early-microcode --kver $_kernelname
       msg2 "Updating GRUB"
       sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+      if [ "$_distro" = "Gentoo" ]; then
+        _kernel_src_gentoo="linux-tkg-$_basekernel-$_kernel_flavor"
+        if [ -d "/usr/src/${_kernel_src_gentoo}" ];then
+          # Remove work-tree if it exists
+          sudo git worktree remove --force "/usr/src/${_kernel_src_gentoo}"
+        fi
+        if git branch --list | grep "${_kernel_src_gentoo}"; then
+          # Delete branch if it exists
+          git branch -D "${_kernel_src_gentoo}"
+        fi
+        git checkout -b "${_kernel_src_gentoo}"
+        git add -Af
+        git commit -m "Automatic branch for ${_kernel_src_gentoo}"
+        sudo git worktree add -f "/usr/src/${_kernel_src_gentoo}" "${_kernel_src_gentoo}"
+        sudo ln -sf "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
+        sudo emerge @module-rebuild
+      fi
     fi
   fi
 fi
