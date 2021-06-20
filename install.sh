@@ -442,7 +442,7 @@ if [ "$1" = "install" ]; then
       msg2 "Installing kernel"
       sudo make install
       msg2 "Creating initramfs"
-      sudo dracut --force --hostonly --lz4 --early-microcode --kver $_kernelname
+      sudo dracut --force --hostonly ${_dracut_options} --kver $_kernelname
       msg2 "Updating GRUB"
       sudo grub-mkconfig -o /boot/grub/grub.cfg
 
@@ -460,8 +460,14 @@ if [ "$1" = "install" ]; then
         git add -Af
         git commit -m "Automatic branch for ${_kernel_src_gentoo}"
         sudo git worktree add -f "/usr/src/${_kernel_src_gentoo}" "${_kernel_src_gentoo}"
-        sudo ln -sf "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
-        sudo emerge @module-rebuild
+        if [ -f "/usr/src/linux" ]; then
+          sudo rm -rf "/usr/src/linux"
+        fi
+        sudo ln -s "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
+        if [ "$_compiler" = "gcc" ];then
+          warning "Building modules with LLVM/Clang is mostly unsupported by \"emerge @module-rebuild\" except for Nvidia 465.31+"
+        fi
+        sudo emerge @module-rebuild --keep-going
       fi
     fi
   fi
