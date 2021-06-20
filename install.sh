@@ -410,8 +410,7 @@ if [ "$1" = "install" ]; then
 
     ./scripts/config --set-str LOCALVERSION "-${_kernel_flavor}"
 
-    if [ "0" = "0" ]; then
-    # if make ${llvm_opt} -j ${_thread_num}; then
+    if make ${llvm_opt} -j ${_thread_num}; then
 
       if [[ "$_sub" = rc* ]]; then
         _kernelname=$_basekernel.${_kernel_subver}-${_sub}-$_kernel_flavor
