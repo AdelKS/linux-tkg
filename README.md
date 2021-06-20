@@ -89,8 +89,8 @@ makepkg -si
 The script will use a slightly modified Arch config from the `linux-tkg-config` folder. The options selected at build-time are installed to `/usr/share/doc/$pkgbase/customization.cfg`, where `$pkgbase` is the package name.
 
 
-
 #### DEB (Debian, Ubuntu and derivatives) and RPM (Fedora, SUSE and derivatives) based distributions
+The interactive `install.sh` script will create, depending on the selected distro, `.deb` or `.rpm` packages, move them in the the subfolder `DEBS` or `RPMS` then prompts to install them with the distro's package manager.
 ```
 git clone https://github.com/Frogging-Family/linux-tkg.git
 cd linux-tkg
@@ -98,12 +98,12 @@ cd linux-tkg
 ./install.sh install
 ```
 Uninstalling custom kernels installed through the script has to be done
-manually. The script can can help out with some useful information:
+manually. `install.sh` can can help out with some useful information:
 ```
 cd path/to/linux-tkg
 ./install.sh uninstall-help
 ```
-The script will use your current kernel's `.config` file, which will be searched for either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` (otherwise the script won't work as-is). It's recommended to run the script booted on your distro-provided kernel.
+The script will use your current kernel's `.config` file, which will be searched for either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` otherwise it defaults the the "vanilla" upstream `.config` file. It's recommended to run the script booted on your distro-provided kernel.
 
 #### Void Linux
 ```
@@ -115,15 +115,89 @@ cd void-packages
 ./xbps-src pkg -j$(nproc) linux-tkg
 ```
 If you have to restart the build for any reason, run `./xbps-src clean linux-tkg` first.
-
-#### Other linux distributions
-If your distro is neither DEB nor RPM based, `install.sh` script can clone the kernel tree in the `linux-src-git` folder, patch and edit a `.config` file based on your current kernel's. It's expected either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` (otherwise it won't work as-is).
-
-To do so, run:
+#### Generic install
+The interactive `install.sh` script can be used to perform a "Generic" install by choosing `Generic` when prompted. It git clones the kernel tree in the `linux-src-git` folder, patches the code and edits a `.config` file in it.
 ```
+git clone https://github.com/Frogging-Family/linux-tkg.git
+cd linux-tkg
+# Optional: edit the "customization.cfg" file
+./install.sh install
+```
+The script will compile the kernel then prompt before doing the following:
+```shell
+sudo make modules_install
+sudo make headers_install INSTALL_HDR_PATH=/usr # CAUTION: this will replace files in /usr/include
+sudo make install
+sudo dracut --force --hostonly --kver $_kernelname ${_dracut_options}
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
+**Notes:**
+- `_dracut_options` is a variable that can be changed in `customization.cfg`.
+- The script uses a base `.config` file. Its path can be provided through `_configfile` in `customization.cfg`. Otherwise ``/boot/config-`uname -r`.config``, ``/proc/config.gz`` or a "vanilla" upstream `.config` file is used.
+- The installed files will not be tracked by your package manager and uninstalling requires manual intervention. `./install.sh uninstall-help` can help with useful information if your install procedure follows the `Generic` approach.
+
+#### Gentoo
+The interactive `install.sh` script supports Gentoo by following the same procedure as `Generic`. Then does the necessary steps to build out-of-tree modules through `emerge @module-rebuild`.
+```
+git clone https://github.com/Frogging-Family/linux-tkg.git
+cd linux-tkg
+# Optional: edit the "customization.cfg" file
+./install.sh install
+```
+**Notes:**
+- on top of the `Generic` procedure, a "shallow" copy (using `git worktree`) of the (patched) kernel sources folder `linux-src-git` is made in `/usr/src/linux-tkg-${kernel_flavor}`. Then the newly created folder is symlinked to `/usr/src/linux` and finally a `sudo emerge @module-rebuild` is performed.
+- `${kernel_flavor}` is a default naming scheme but can be customized with the variable `_kernel_localversion` in `customization.cfg`.
+#### Other linux distributions
+If you want to build your kernel your way, `install.sh` script can git clone the kernel tree in the `linux-src-git` folder, patch and edit a `.config` file based on a starting one. Its path can be provided through `_configfile` in `customization.cfg`. Otherwise ``/boot/config-`uname -r`.config``, ``/proc/config.gz`` or a "vanilla" upstream `.config` file is used.
+```
+git clone https://github.com/Frogging-Family/linux-tkg.git
+cd linux-tkg
 # Optional: edit the "customization.cfg" file
 ./install.sh config
 ```
+
+
+
+
+
+
+#### Other distributions
+`linux-tkg` supports various distributions and are prompted by its interactive `install.sh` script:
+```shell
+git clone https://github.com/Frogging-Family/linux-tkg.git
+cd linux-tkg
+# Optional: edit the "customization.cfg" file
+./install.sh install
+```
+The following distributions are supported:
+- DEB based (Debian, Ubuntu and derivatives): creates `.deb` packages in the subfolder `DEBS` then prompts to install them with the distro's package manager.
+- RPM based (Fedora, SUSE and derivatives): creates `.rpm` packages in the subfolder `RPMS` then prompts to install them with the distro's package manager.
+- Gentoo
+By default, the script will use the `.config` file of the currently running kernel as a base. It is expected either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` otherwise it defaults the the "vanilla" upstream `.config` file. To provide you own `.config` file is possible through the variable `_configfile` in `customization.cfg`.
+
+For unsupported distributions, `install.sh` script can clone the kernel tree in the `linux-src-git` folder, patch and edit a `.config` file based on the currently running kernel: it is expected either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` (otherwise it won't work as-is).
+
+To do so, run:
+```
+git clone https://github.com/Frogging-Family/linux-tkg.git
+# Optional: edit the "customization.cfg" file
+./install.sh config
+```
+
+Uninstalling custom kernels installed through the script has to be done
+manually. The script can can help out with some useful information:
+```
+cd path/to/linux-tkg
+./install.sh uninstall-help
+```
+
+**More information:**
+
+
+- The script will use your current kernel's `.config` file, which will be searched for either at ``/boot/config-`uname -r`.config`` or ``/proc/config.gz`` (otherwise the script won't work as-is). It's recommended to run the script booted on your distro-provided kernel.
+
+
+If your distro is neither DEB nor RPM based, 
 
 When selecting `Generic` as distro, `./install.sh install` will compile the kernel then prompt before doing the following:
 ```shell
