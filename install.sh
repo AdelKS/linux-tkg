@@ -91,14 +91,14 @@ _linux_git_branch_checkout() {
     cd linux-src-git
 
     # Remove "origin" remote if present
-    if git remote -v | grep "origin" ; then
+    if git remote -v | grep -w "origin" ; then
       git remote rm origin
     fi
 
-    if ! git remote -v | grep "kernel.org" ; then
+    if ! git remote -v | grep -w "kernel.org" ; then
       git remote add kernel.org https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
     fi
-    if ! git remote -v | grep "googlesource.com" ; then
+    if ! git remote -v | grep -w "googlesource.com" ; then
       git remote add googlesource.com https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable
     fi
 
@@ -141,7 +141,7 @@ _linux_git_branch_checkout() {
     fi
 
     msg2 "Switching to linux-${_basekernel}.y"
-    if ! git branch --list | grep "linux-${_basekernel}-${_git_mirror}" ; then
+    if ! git branch --list | grep -w "linux-${_basekernel}-${_git_mirror}" ; then
       msg2 "${_basekernel}.y branch doesn't locally exist, shallow cloning..."
       git remote set-branches --add kernel.org linux-${_basekernel}.y
       git remote set-branches --add googlesource.com linux-${_basekernel}.y
@@ -158,6 +158,12 @@ _linux_git_branch_checkout() {
     git checkout "${_kernel_tag}"
   fi
 
+  if git branch --list | grep -w "linux-tkg-work-branch"; then
+    # Delete branch if it exists
+    git branch -D "linux-tkg-work-branch"
+  fi
+
+  git checkout -b "linux-tkg-work-branch"
 }
 
 if [ "$1" != "install" ] && [ "$1" != "config" ] && [ "$1" != "uninstall-help" ]; then
@@ -329,6 +335,7 @@ if [ "$1" = "install" ]; then
 
   if [ "$_distro" = "Ubuntu" ]  || [ "$_distro" = "Debian" ]; then
 
+    msg2 "Building kernel DEB packages"
     if make ${llvm_opt} -j ${_thread_num} deb-pkg LOCALVERSION=-${_kernel_flavor}; then
       msg2 "Building successfully finished!"
 
@@ -369,6 +376,7 @@ if [ "$1" = "install" ]; then
       _extra_ver_str="_${_kernel_flavor}"
     fi
 
+    msg2 "Building kernel RPM packages"
     if RPMOPTS="--define '_topdir ${HOME}/.cache/linux-tkg-rpmbuild'" make ${llvm_opt} -j ${_thread_num} rpm-pkg EXTRAVERSION="${_extra_ver_str}"; then
       msg2 "Building successfully finished!"
 
@@ -410,38 +418,14 @@ if [ "$1" = "install" ]; then
 
     ./scripts/config --set-str LOCALVERSION "-${_kernel_flavor}"
 
-    if [ "$_distro" = "Gentoo" ]; then
-      _kernel_src_gentoo="linux-tkg-$_kernelname"
-      if [ -d "/usr/src/${_kernel_src_gentoo}" ];then
-        # Remove work-tree if it exists
-        sudo git worktree remove --force "/usr/src/${_kernel_src_gentoo}"
-      fi
-      if git branch --list | grep "${_kernel_src_gentoo}"; then
-        # Delete branch if it exists
-        git branch -D "${_kernel_src_gentoo}"
-      fi
-      git checkout -b "${_kernel_src_gentoo}"
-      git add -Af
-      git commit -m "Automatic branch for ${_kernel_src_gentoo}"
-      sudo git worktree add -f "/usr/src/${_kernel_src_gentoo}" "${_kernel_src_gentoo}"
-      if [ -f "/usr/src/linux" ]; then
-        sudo rm -rf "/usr/src/linux"
-      fi
-      sudo ln -s "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
-
-      cd "/usr/src/${_kernel_src_gentoo}"
-      msg2 "Preparing kernel sources in /usr/src/${_kernel_src_gentoo} for module building"
-      sudo make modules_prepare
-      cd "$_where/linux-src-git"
+    if [[ "$_sub" = rc* ]]; then
+      _kernelname=$_basekernel.${_kernel_subver}-${_sub}-$_kernel_flavor
+    else
+      _kernelname=$_basekernel.${_kernel_subver}-$_kernel_flavor
     fi
 
+    msg2 "Building kernel"
     if make ${llvm_opt} -j ${_thread_num}; then
-
-      if [[ "$_sub" = rc* ]]; then
-        _kernelname=$_basekernel.${_kernel_subver}-${_sub}-$_kernel_flavor
-      else
-        _kernelname=$_basekernel.${_kernel_subver}-$_kernel_flavor
-      fi
 
       if [ "$_distro" = "Generic" ]; then
         msg2 "Building successful"
@@ -472,8 +456,29 @@ if [ "$1" = "install" ]; then
       sudo grub-mkconfig -o /boot/grub/grub.cfg
 
       if [ "$_distro" = "Gentoo" ]; then
+        _kernel_src_gentoo="linux-$_kernelname"
+        if [ -d "/usr/src/${_kernel_src_gentoo}" ];then
+          # Remove work-tree if it exists
+          sudo git worktree remove --force "/usr/src/${_kernel_src_gentoo}"
+        fi
+        if git branch --list | grep -w "${_kernel_src_gentoo}"; then
+          # Delete branch if it exists
+          git branch -D "${_kernel_src_gentoo}"
+        fi
+
+        #  Commit the changes to linux-src-work-branch
+        git add -Af
+        git commit -m "Automatic commit for ${_kernel_src_gentoo}"
+
+        # Create branch on top of commit, copy it over to "/usr/src/${_kernel_src_gentoo}" as a worktree
+        git branch "${_kernel_src_gentoo}"
+        sudo git worktree add "/usr/src/${_kernel_src_gentoo}" "${_kernel_src_gentoo}"
+
+        # symlink to mimic "eselect kernel set"
+        sudo ln -sfn "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
+
         msg2 "Rebuilding kernel modules with \"emerge @module-rebuild\""
-        if [ "$_compiler" = "gcc" ];then
+        if [ "$_compiler" = "llvm" ];then
           warning "Building modules with LLVM/Clang is mostly unsupported by \"emerge @module-rebuild\" except for Nvidia 465.31+"
         fi
         sudo emerge @module-rebuild --keep-going
