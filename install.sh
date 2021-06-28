@@ -410,6 +410,31 @@ if [ "$1" = "install" ]; then
 
     ./scripts/config --set-str LOCALVERSION "-${_kernel_flavor}"
 
+    if [ "$_distro" = "Gentoo" ]; then
+      _kernel_src_gentoo="linux-tkg-$_kernelname"
+      if [ -d "/usr/src/${_kernel_src_gentoo}" ];then
+        # Remove work-tree if it exists
+        sudo git worktree remove --force "/usr/src/${_kernel_src_gentoo}"
+      fi
+      if git branch --list | grep "${_kernel_src_gentoo}"; then
+        # Delete branch if it exists
+        git branch -D "${_kernel_src_gentoo}"
+      fi
+      git checkout -b "${_kernel_src_gentoo}"
+      git add -Af
+      git commit -m "Automatic branch for ${_kernel_src_gentoo}"
+      sudo git worktree add -f "/usr/src/${_kernel_src_gentoo}" "${_kernel_src_gentoo}"
+      if [ -f "/usr/src/linux" ]; then
+        sudo rm -rf "/usr/src/linux"
+      fi
+      sudo ln -s "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
+
+      cd "/usr/src/${_kernel_src_gentoo}"
+      msg2 "Preparing kernel sources in /usr/src/${_kernel_src_gentoo} for module building"
+      sudo make modules_prepare
+      cd "$_where/linux-src-git"
+    fi
+
     if make ${llvm_opt} -j ${_thread_num}; then
 
       if [[ "$_sub" = rc* ]]; then
@@ -447,23 +472,7 @@ if [ "$1" = "install" ]; then
       sudo grub-mkconfig -o /boot/grub/grub.cfg
 
       if [ "$_distro" = "Gentoo" ]; then
-        _kernel_src_gentoo="linux-tkg-$_basekernel-$_kernel_flavor"
-        if [ -d "/usr/src/${_kernel_src_gentoo}" ];then
-          # Remove work-tree if it exists
-          sudo git worktree remove --force "/usr/src/${_kernel_src_gentoo}"
-        fi
-        if git branch --list | grep "${_kernel_src_gentoo}"; then
-          # Delete branch if it exists
-          git branch -D "${_kernel_src_gentoo}"
-        fi
-        git checkout -b "${_kernel_src_gentoo}"
-        git add -Af
-        git commit -m "Automatic branch for ${_kernel_src_gentoo}"
-        sudo git worktree add -f "/usr/src/${_kernel_src_gentoo}" "${_kernel_src_gentoo}"
-        if [ -f "/usr/src/linux" ]; then
-          sudo rm -rf "/usr/src/linux"
-        fi
-        sudo ln -s "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
+        msg2 "Rebuilding kernel modules with \"emerge @module-rebuild\""
         if [ "$_compiler" = "gcc" ];then
           warning "Building modules with LLVM/Clang is mostly unsupported by \"emerge @module-rebuild\" except for Nvidia 465.31+"
         fi
