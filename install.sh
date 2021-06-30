@@ -157,13 +157,6 @@ _linux_git_branch_checkout() {
     msg2 "Checking out latest release: ${_kernel_tag}"
     git checkout "${_kernel_tag}"
   fi
-
-  if git branch --list | grep -w "linux-tkg-work-branch"; then
-    # Delete branch if it exists
-    git branch -D "linux-tkg-work-branch"
-  fi
-
-  git checkout -b "linux-tkg-work-branch"
 }
 
 if [ "$1" != "install" ] && [ "$1" != "config" ] && [ "$1" != "uninstall-help" ]; then
@@ -424,66 +417,68 @@ if [ "$1" = "install" ]; then
       _kernelname=$_basekernel.${_kernel_subver}-$_kernel_flavor
     fi
 
-    msg2 "Building kernel"
-    if make ${llvm_opt} -j ${_thread_num}; then
+    if [ "$_distro" = "Gentoo" ]; then
+      _kernel_src_gentoo="linux-$_kernelname"
 
-      if [ "$_distro" = "Generic" ]; then
-        msg2 "Building successful"
-        msg2 "The installation process will run the following commands:"
-        echo "    sudo make modules_install"
-        echo "    sudo make headers_install INSTALL_HDR_PATH=/usr # CAUTION: this will replace files in /usr/include"
-        echo "    sudo make install"
-        echo "    sudo dracut --hostonly --kver $_kernelname"
-        echo "    sudo grub-mkconfig -o /boot/grub/grub.cfg"
-
-        msg2 "Note: Uninstalling requires manual intervention, use './install.sh uninstall-help' for more information."
-        read -p "Continue ? [Y/n]: " _continue
-
-        if ! [[ $_continue =~ ^(Y|y|Yes|yes)$ ]];then
-          exit 0
-        fi
+      if [ -f "/usr/src/${_kernel_src_gentoo}" ]; then
+        sudo rm -rf "/usr/src/${_kernel_src_gentoo}"
       fi
 
-      msg2 "Installing modules"
-      sudo make modules_install
-      msg2 "Installing headers"
-      sudo make headers_install INSTALL_HDR_PATH=/usr
-      msg2 "Installing kernel"
-      sudo make install
-      msg2 "Creating initramfs"
-      sudo dracut --force --hostonly ${_dracut_options} --kver $_kernelname
-      msg2 "Updating GRUB"
-      sudo grub-mkconfig -o /boot/grub/grub.cfg
+      msg2 "Copying the source code to /usr/src/${_kernel_src_gentoo}"
+      sudo cp --reflink=auto -r . "/usr/src/${_kernel_src_gentoo}"
+      sudo rm -rf "/usr/src/${_kernel_src_gentoo}/.git"
 
-      if [ "$_distro" = "Gentoo" ]; then
-        _kernel_src_gentoo="linux-$_kernelname"
-        if [ -d "/usr/src/${_kernel_src_gentoo}" ];then
-          # Remove work-tree if it exists
-          sudo git worktree remove --force "/usr/src/${_kernel_src_gentoo}"
-        fi
-        if git branch --list | grep -w "${_kernel_src_gentoo}"; then
-          # Delete branch if it exists
-          git branch -D "${_kernel_src_gentoo}"
-        fi
+      sudo ln -sfn "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
 
-        #  Commit the changes to linux-src-work-branch
-        git add -Af
-        git commit -m "Automatic commit for ${_kernel_src_gentoo}"
-
-        # Create branch on top of commit, copy it over to "/usr/src/${_kernel_src_gentoo}" as a worktree
-        git branch "${_kernel_src_gentoo}"
-        sudo git worktree add "/usr/src/${_kernel_src_gentoo}" "${_kernel_src_gentoo}"
-
-        # symlink to mimic "eselect kernel set"
-        sudo ln -sfn "/usr/src/${_kernel_src_gentoo}" "/usr/src/linux"
-
-        msg2 "Rebuilding kernel modules with \"emerge @module-rebuild\""
-        if [ "$_compiler" = "llvm" ];then
-          warning "Building modules with LLVM/Clang is mostly unsupported by \"emerge @module-rebuild\" except for Nvidia 465.31+"
-        fi
-        sudo emerge @module-rebuild --keep-going
-      fi
+      cd "/usr/src/${_kernel_src_gentoo}"
     fi
+
+    msg2 "Building kernel"
+    if [ "$_distro" = "Gentoo" ]; then
+      sudo make ${llvm_opt} -j ${_thread_num}
+    else
+      make ${llvm_opt} -j ${_thread_num}
+    fi
+
+    msg2 "Build successful"
+    msg2 "The installation process will run the following commands:"
+    echo "    sudo make modules_install"
+    echo "    sudo make headers_install INSTALL_HDR_PATH=/usr # CAUTION: this will replace files in /usr/include"
+    echo "    sudo make install"
+    echo "    sudo dracut --hostonly ${_dracut_options} --kver $_kernelname"
+    echo "    sudo grub-mkconfig -o /boot/grub/grub.cfg"
+
+    msg2 "Note: Uninstalling requires manual intervention, use './install.sh uninstall-help' for more information."
+    read -p "Continue ? [Y/n]: " _continue
+
+    if ! [[ $_continue =~ ^(Y|y|Yes|yes)$ ]];then
+      exit 0
+    fi
+
+    msg2 "Installing modules"
+    sudo make modules_install
+    msg2 "Installing headers"
+    sudo make headers_install INSTALL_HDR_PATH=/usr
+    msg2 "Installing kernel"
+    sudo make install
+    msg2 "Creating initramfs"
+    sudo dracut --force --hostonly ${_dracut_options} --kver $_kernelname
+    msg2 "Updating GRUB"
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+    if [ "$_distro" = "Gentoo" ]; then
+      msg2 "Rebuilding kernel modules with \"emerge @module-rebuild\""
+      if [ "$_compiler" = "llvm" ];then
+        warning "Building modules with LLVM/Clang is mostly unsupported by \"emerge @module-rebuild\" except for Nvidia 465.31+"
+      fi
+
+      read -p "Continue ? [Y/n]: " _continue
+      if ! [[ $_continue =~ ^(Y|y|Yes|yes)$ ]];then
+        exit 0
+      fi
+      sudo emerge @module-rebuild --keep-going
+    fi
+
   fi
 fi
 
@@ -517,7 +512,7 @@ if [ "$1" = "uninstall-help" ]; then
     msg2 "      sudo zypper remove --no-clean-deps kernel-VERSION kernel-devel-VERSION kernel-headers-VERSION"
     msg2 "       where VERSION is displayed in the second to last column"
     msg2 "Note: kernel-headers packages are no longer created and installed, you can safely remove any remnants."
-  elif [ "$_distro" = "Generic" ]; then
+  elif [[ "$_distro" =~ ^(Generic|Gentoo)$ ]]; then
     msg2 "Folders in /lib/modules :"
     ls /lib/modules
     msg2 "Files in /boot :"
