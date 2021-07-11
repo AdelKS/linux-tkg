@@ -445,7 +445,7 @@ if [ "$1" = "install" ]; then
     echo "    sudo make modules_install"
     echo "    sudo make headers_install INSTALL_HDR_PATH=/usr # CAUTION: this will replace files in /usr/include"
     echo "    sudo make install"
-    echo "    sudo dracut --hostonly ${_dracut_options} --kver $_kernelname"
+    echo "    sudo dracut --force --hostonly ${_dracut_options} --kver $_kernelname"
     echo "    sudo grub-mkconfig -o /boot/grub/grub.cfg"
 
     msg2 "Note: Uninstalling requires manual intervention, use './install.sh uninstall-help' for more information."
