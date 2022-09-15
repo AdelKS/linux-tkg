@@ -17,7 +17,9 @@ set -e
 _where=`pwd`
 srcdir="$_where"
 
+declare -p -x > current_env
 source customization.cfg
+. current_env
 
 source linux-tkg-config/prepare
 
