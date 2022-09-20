@@ -79,7 +79,7 @@ jobs:
       #    because makepkg absolutely refuses to run as root
       - name: Prepare for makepkg
         run: |
-          pacman -Syu --noconfirm base-devel sudo ccache
+          pacman -Syu --noconfirm base-devel sudo
           useradd user -G wheel && echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           chown user -R ..
           chown user -R /tmp
@@ -90,7 +90,8 @@ jobs:
           echo "${_modprobeddb_db_path}"
 
       - name: Compile Kernel
-        run: su user -c "yes '' | makepkg --noconfirm -s"
+        # run: su user -c "yes '' | makepkg --noconfirm -s"
+        run: echo "test" > "$PKGDEST"/linux-pds.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
@@ -123,7 +124,7 @@ jobs:
       #    because makepkg absolutely refuses to run as root
       - name: Prepare for makepkg
         run: |
-          pacman -Syu --noconfirm base-devel sudo ccache
+          pacman -Syu --noconfirm base-devel sudo
           useradd user -G wheel && echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           chown user -R ..
           chown user -R /tmp
@@ -134,7 +135,8 @@ jobs:
           echo "${_modprobeddb_db_path}"
 
       - name: Compile Kernel
-        run: su user -c "yes '' | makepkg --noconfirm -s"
+        # run: su user -c "yes '' | makepkg --noconfirm -s"
+        run: echo "test" > "$PKGDEST"/linux-cfs.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
@@ -167,7 +169,7 @@ jobs:
       #    because makepkg absolutely refuses to run as root
       - name: Prepare for makepkg
         run: |
-          pacman -Syu --noconfirm base-devel sudo ccache
+          pacman -Syu --noconfirm base-devel sudo
           useradd user -G wheel && echo "user ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           chown user -R ..
           chown user -R /tmp
@@ -178,7 +180,8 @@ jobs:
           echo "${_modprobeddb_db_path}"
 
       - name: Compile Kernel
-        run: su user -c "yes '' | makepkg --noconfirm -s"
+        # run: su user -c "yes '' | makepkg --noconfirm -s"
+        run: echo "test" > "$PKGDEST"/linux-bmq.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
