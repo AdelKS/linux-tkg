@@ -43,7 +43,7 @@ jobs:
         id: check_for_new_kernel
         run: |
           ./.github/get_latest_kver.sh
-          latest_kernel="$(cat .github/latest-kernel)""
+          latest_kernel="$(cat .github/latest-kernel)"
           echo "::set-output name=latest_kernel::$latest_kernel"
           [[ "$latest_kernel" != "$latest_release" ]]
           echo "::set-output name=new_kernel::$?"
