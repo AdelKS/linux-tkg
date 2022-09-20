@@ -149,7 +149,7 @@ jobs:
     needs: ["check-for-newer-kernel"]
     if: |
       github.ref == 'refs/heads/master' &&
-      needs.check-for-newer-kernel.new_kernel == "1"
+      needs.check-for-newer-kernel.new_kernel == 1
 
     steps:
       # We need to install git so the checkout is done with it
