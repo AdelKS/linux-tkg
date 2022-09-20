@@ -23,7 +23,7 @@ jobs:
 
     outputs:
       new_kernel: ${{ steps.check_for_new_kernel.outputs.new_kernel }}
-      latest_release: ${{ steps.latest_release.outputs.release }}
+      latest_kernel: ${{ steps.check_for_new_kernel.outputs.latest_kernel }}
 
     steps:
       - name: Checkount linux-tkg
@@ -43,7 +43,9 @@ jobs:
         id: check_for_new_kernel
         run: |
           ./.github/get_latest_kver.sh
-          [[ "$latest-kernel" != "$latest_release" ]]
+          latest_kernel="$(cat .github/latest-kernel)""
+          echo "::set-output name=latest_kernel::$latest_kernel"
+          [[ "$latest_kernel" != "$latest_release" ]]
           echo "::set-output name=new_kernel::$?"
         env:
           latest_release: ${{ steps.latest_release.outputs.release }}
