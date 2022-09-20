@@ -64,7 +64,7 @@ jobs:
     # the == 0 test is for "true" because it tests the exit code of a bash test
     if: |
       github.ref == 'refs/heads/master' &&
-      needs.check-for-newer-kernel.new_kernel == 0
+      needs.check-for-newer-kernel.outputs.new_kernel == "0"
 
     steps:
       # We need to install git so the checkout is done with it
@@ -111,7 +111,7 @@ jobs:
     needs: ["check-for-newer-kernel"]
     if: |
       github.ref == 'refs/heads/master' &&
-      needs.check-for-newer-kernel.new_kernel == 0
+      needs.check-for-newer-kernel.outputs.new_kernel == "0"
 
     steps:
       # We need to install git so the checkout is done with it
@@ -158,7 +158,7 @@ jobs:
     needs: ["check-for-newer-kernel"]
     if: |
       github.ref == 'refs/heads/master' &&
-      needs.check-for-newer-kernel.new_kernel == 0
+      needs.check-for-newer-kernel.outputs.new_kernel == "0"
 
     steps:
       # We need to install git so the checkout is done with it
@@ -210,8 +210,8 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ needs.check-for-newer-kernel.latest_kernel }}
+          automatic_release_tag: ${{ needs.check-for-newer-kernel.outputs.latest_kernel }}
           prerelease: false
-          title: "${{ steps.latest_kernel.outputs.latest_kernel }}"
+          title: "${{ needs.check-for-newer-kernel.outputs.latest_kernel }}"
           files: |
             ${{ env.PKGDEST }}/*
