@@ -59,9 +59,11 @@ jobs:
     container: archlinux:latest
 
     needs: ["check-for-newer-kernel"]
+
+    # the == 0 test is for "true" because it tests the exit code of a bash test
     if: |
       github.ref == 'refs/heads/master' &&
-      needs.check-for-newer-kernel.new_kernel == 1
+      needs.check-for-newer-kernel.new_kernel == 0
 
     steps:
       # We need to install git so the checkout is done with it
@@ -105,7 +107,7 @@ jobs:
     needs: ["check-for-newer-kernel"]
     if: |
       github.ref == 'refs/heads/master' &&
-      needs.check-for-newer-kernel.new_kernel == 1
+      needs.check-for-newer-kernel.new_kernel == 0
 
     steps:
       # We need to install git so the checkout is done with it
@@ -149,7 +151,7 @@ jobs:
     needs: ["check-for-newer-kernel"]
     if: |
       github.ref == 'refs/heads/master' &&
-      needs.check-for-newer-kernel.new_kernel == 1
+      needs.check-for-newer-kernel.new_kernel == 0
 
     steps:
       # We need to install git so the checkout is done with it
