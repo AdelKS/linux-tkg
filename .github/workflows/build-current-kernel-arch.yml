@@ -23,6 +23,7 @@ jobs:
 
     outputs:
       new_kernel: ${{ steps.check_for_new_kernel.outputs.new_kernel }}
+      latest_release: ${{ steps.latest_release.outputs.release }}
 
     steps:
       - name: Checkount linux-tkg
@@ -198,7 +199,7 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    needs: ["build-pds", "build-cfs", "build-bmq"]
+    needs: [check-for-newer-kernel, "build-pds", "build-cfs", "build-bmq"]
     steps:
       - name: Download release artifacts
         uses: actions/download-artifact@v3
@@ -209,7 +210,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ steps.latest_kernel.outputs.latest_kernel }}
+          automatic_release_tag: ${{ needs.check-for-newer-kernel.latest_kernel }}
           prerelease: false
           title: "${{ steps.latest_kernel.outputs.latest_kernel }}"
           files: |
