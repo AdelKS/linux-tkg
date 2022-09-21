@@ -97,11 +97,11 @@ jobs:
         # run: su user -c "yes '' | makepkg --noconfirm -s"
         run: |
           mkdir -p "$PKGDEST"
-          echo "test" > "$PKGDEST"/linux-pds.pkg.tar.zst
+          echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
-          name: kernel-package-${{ env._cpusched }}
+          name: kernel-packages-${{ env._cpusched }}
           path: ${{ env.PKGDEST }}/linux*.pkg.tar.zst
 
   build-cfs:
@@ -144,11 +144,11 @@ jobs:
         # run: su user -c "yes '' | makepkg --noconfirm -s"
         run: |
           mkdir -p "$PKGDEST"
-          echo "test" > "$PKGDEST"/linux-cfs.pkg.tar.zst
+          echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
-          name: kernel-package-${{ env._cpusched }}
+          name: kernel-packages-${{ env._cpusched }}
           path: ${{ env.PKGDEST }}/linux*.pkg.tar.zst
 
   build-bmq:
@@ -191,11 +191,11 @@ jobs:
         # run: su user -c "yes '' | makepkg --noconfirm -s"
         run: |
           mkdir -p "$PKGDEST"
-          echo "test" > "$PKGDEST"/linux-bmq.pkg.tar.zst
+          echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
-          name: kernel-package-${{ env._cpusched }}
+          name: kernel-packages-${{ env._cpusched }}
           path: ${{ env.PKGDEST }}/linux*.pkg.tar.zst
 
   make-release:
@@ -217,4 +217,4 @@ jobs:
           prerelease: false
           title: "${{ needs.check-for-newer-kernel.outputs.latest_kernel }}"
           files: |
-            ${{ env.PKGDEST }}/*
+            ${{ env.PKGDEST }}/kernel-packages-*/*
