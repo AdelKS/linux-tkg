@@ -94,10 +94,10 @@ jobs:
           echo "${_modprobeddb_db_path}"
 
       - name: Compile Kernel
-        # run: su user -c "yes '' | makepkg --noconfirm -s"
-        run: |
-          mkdir -p "$PKGDEST"
-          echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
+        run: su user -c "yes '' | makepkg --noconfirm -s"
+        # run: |
+        #   mkdir -p "$PKGDEST"
+        #   echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
@@ -141,10 +141,10 @@ jobs:
           echo "${_modprobeddb_db_path}"
 
       - name: Compile Kernel
-        # run: su user -c "yes '' | makepkg --noconfirm -s"
-        run: |
-          mkdir -p "$PKGDEST"
-          echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
+        run: su user -c "yes '' | makepkg --noconfirm -s"
+        # run: |
+        #   mkdir -p "$PKGDEST"
+        #   echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
@@ -188,10 +188,10 @@ jobs:
           echo "${_modprobeddb_db_path}"
 
       - name: Compile Kernel
-        # run: su user -c "yes '' | makepkg --noconfirm -s"
-        run: |
-          mkdir -p "$PKGDEST"
-          echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
+        run: su user -c "yes '' | makepkg --noconfirm -s"
+        # run: |
+        #   mkdir -p "$PKGDEST"
+        #   echo "test" > "$PKGDEST"/linux-$_cpusched.pkg.tar.zst
 
       - uses: actions/upload-artifact@v3
         with:
