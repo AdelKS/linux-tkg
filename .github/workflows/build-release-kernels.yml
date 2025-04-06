@@ -83,7 +83,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           files_list=$(find *-kernel-packages-* -type f | paste -sd' ')
-          gh release create ${{ needs.kver-checks.outputs.latest_kernel }} $files_list --latest \
+          echo "files: $files_list"
+          GH_DEBUG=api gh release create ${{ needs.kver-checks.outputs.latest_kernel }} $files_list --latest \
           --title 'diet linux-tkg ${{ needs.kver-checks.outputs.latest_kernel }}' \
           --notes 'This is a version of linux-tkg built with the option `_kernel_on_diet` enabled.
           If you encounter issues with it, please build the kernel locally with that option disabled.'
