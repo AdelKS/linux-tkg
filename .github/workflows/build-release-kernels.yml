@@ -8,7 +8,7 @@ jobs:
 
   kver-checks:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     outputs:
       latest_release: ${{ steps.latest_release.outputs.release }}
@@ -52,8 +52,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        _cpusched: [bore, eevdf]
-        os: [arch, ubuntu, fedora]
+        _cpusched: [eevdf]
+        os: [arch]
     uses: ./.github/workflows/builder-dispatcher.yml
     with:
       _cpusched: ${{ matrix._cpusched }}

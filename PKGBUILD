@@ -29,7 +29,7 @@ _where="$PWD" # track basedir as different Arch based distros are moving srcdir 
 # Create BIG_UGLY_FROGMINER only on first run and save in it all settings
 if [ ! -e "$_where"/BIG_UGLY_FROGMINER ]; then
 
-  cp "$_where"/customization.cfg "$_where"/BIG_UGLY_FROGMINER
+  ( cat customization.cfg | grep -v -e '^#' -e "^$" ) > "$_where"/BIG_UGLY_FROGMINER
 
   # extract and define value of _EXT_CONFIG_PATH from customization file
   eval `grep _EXT_CONFIG_PATH "$_where"/customization.cfg`
@@ -47,6 +47,11 @@ if [ ! -e "$_where"/BIG_UGLY_FROGMINER ]; then
   source "$_where"/linux-tkg-config/prepare
 
   _tkg_initscript
+
+  echo "############################################"
+  echo "$_where"/BIG_UGLY_FROGMINER
+  cat "$_where"/BIG_UGLY_FROGMINER
+  echo "############################################"
 fi
 
 source "$_where"/BIG_UGLY_FROGMINER

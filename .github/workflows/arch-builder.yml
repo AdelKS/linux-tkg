@@ -14,10 +14,10 @@ env:
   _debugdisable: "true"
   _noccache: "true"
   _STRIP: "true"
-  _kernel_on_diet: "true"
+  # _kernel_on_diet: "true"
   _kernel_work_folder: "/tmp"
   _kernel_source_folder: "/tmp"
-  # _modprobeddb: "true"
+  _modprobeddb: "true"
   _modprobeddb_db_path: ${{ github.workspace }}/modprobed.db
 
 
@@ -27,7 +27,7 @@ jobs:
     env:
       _cpusched: ${{ inputs._cpusched }}
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container: archlinux:latest
 
     steps:
@@ -54,10 +54,10 @@ jobs:
           chown user -R ..
           chown user -R /tmp
 
-      # - name: "[debug] make dummy modprobed-db file for faster ci"
-      #   run: |
-      #     touch "${_modprobeddb_db_path}"
-      #     echo "${_modprobeddb_db_path}"
+      - name: "[debug] make dummy modprobed-db file for faster ci"
+        run: |
+          touch "${_modprobeddb_db_path}"
+          echo "${_modprobeddb_db_path}"
 
       - name: Compile Kernel
         run: su --preserve-environment user -c "yes '' | makepkg --noconfirm -s"
