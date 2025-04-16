@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        _cpusched: [eevdf]
+        _cpusched: [bore]
         os: [arch]
     uses: ./.github/workflows/builder-dispatcher.yml
     with:
