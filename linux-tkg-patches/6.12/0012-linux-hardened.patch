@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 607a8937f175..34a6a441bbc9 100644
+index e691f75c97e7..daa7e3ff8231 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -631,17 +631,6 @@
@@ -20,7 +20,7 @@ index 607a8937f175..34a6a441bbc9 100644
  	cio_ignore=	[S390]
  			See Documentation/arch/s390/common_io.rst for details.
  
-@@ -4416,6 +4405,11 @@
+@@ -4434,6 +4423,11 @@
  			the specified number of seconds.  This is to be used if
  			your oopses keep scrolling off the screen.
  
@@ -102,13 +102,13 @@ index dcbb6f6caf6d..d9d2ea78cd4b 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index f26e0f946f02..ec72eadd58ec 100644
+index 7a06c48ffbaa..beffa8b998b3 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 12
- SUBLEVEL = 28
+ SUBLEVEL = 29
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Baby Opossum Posse
@@ -209,7 +209,7 @@ index 3f93f4eef953..ac3805f359de 100644
  
  #ifdef __AARCH64EB__
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index e54da3b4d334..8d07f565685e 100644
+index 7b3622ba4c3c..913df1053e4e 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
 @@ -1245,8 +1245,7 @@ config VM86
@@ -306,7 +306,7 @@ index 3da645139748..f0856cb10207 100644
  	native_write_cr4(cr4);
  }
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index f439763f45ae..4ec254486a36 100644
+index 39e9ec3dea98..b2b453c8b819 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -449,6 +449,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
@@ -987,10 +987,10 @@ index 3255a199ef60..369c3222864e 100644
  #define TCP_RACK_LOSS_DETECTION  0x1 /* Use RACK to detect losses */
  #define TCP_RACK_STATIC_REO_WND  0x2 /* Use static RACK reo wnd */
 diff --git a/init/Kconfig b/init/Kconfig
-index 2b4969758da8..37850d333ba7 100644
+index d3755b2264bd..ab3162f248f9 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -486,6 +486,7 @@ config USELIB
+@@ -489,6 +489,7 @@ config USELIB
  config AUDIT
  	bool "Auditing support"
  	depends on NET
@@ -998,7 +998,7 @@ index 2b4969758da8..37850d333ba7 100644
  	help
  	  Enable auditing infrastructure that can be used with another
  	  kernel subsystem, such as SELinux (which requires this for
-@@ -1314,6 +1315,22 @@ config USER_NS
+@@ -1317,6 +1318,22 @@ config USER_NS
  
  	  If unsure, say N.
  
@@ -1021,7 +1021,7 @@ index 2b4969758da8..37850d333ba7 100644
  config PID_NS
  	bool "PID Namespaces"
  	default y
-@@ -1544,9 +1561,8 @@ menuconfig EXPERT
+@@ -1547,9 +1564,8 @@ menuconfig EXPERT
  	  Only use this if you really know what you are doing.
  
  config UID16
@@ -1032,7 +1032,7 @@ index 2b4969758da8..37850d333ba7 100644
  	help
  	  This enables the legacy 16-bit UID syscall wrappers.
  
-@@ -1575,14 +1591,13 @@ config SGETMASK_SYSCALL
+@@ -1578,14 +1594,13 @@ config SGETMASK_SYSCALL
  	  If unsure, leave the default option here.
  
  config SYSFS_SYSCALL
@@ -1049,7 +1049,7 @@ index 2b4969758da8..37850d333ba7 100644
  
  config FHANDLE
  	bool "open by fhandle syscalls" if EXPERT
-@@ -1720,8 +1735,7 @@ config SHMEM
+@@ -1723,8 +1738,7 @@ config SHMEM
  	  which may be appropriate on small systems without swap.
  
  config AIO
@@ -1060,7 +1060,7 @@ index 2b4969758da8..37850d333ba7 100644
  	  This option enables POSIX asynchronous I/O which may by used
  	  by some high performance threaded applications. Disabling
 diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
-index fef5c6e3b251..b39352306aea 100644
+index 8ef0603c07f1..bb59c6d807d5 100644
 --- a/io_uring/io_uring.c
 +++ b/io_uring/io_uring.c
 @@ -152,7 +152,7 @@ static void io_queue_sqe(struct io_kiocb *req);
@@ -1548,10 +1548,10 @@ index 41a58536531d..329a6e4b6271 100644
  	  Generate a warning if any W+X mappings are found at boot.
  
 diff --git a/mm/internal.h b/mm/internal.h
-index 398633d6b6c9..2241b1278ecd 100644
+index 9e0577413087..742e5ce31855 100644
 --- a/mm/internal.h
 +++ b/mm/internal.h
-@@ -710,6 +710,9 @@ static inline struct folio *page_rmappable_folio(struct page *page)
+@@ -705,6 +705,9 @@ static inline struct folio *page_rmappable_folio(struct page *page)
  	return folio;
  }
  
@@ -1631,7 +1631,7 @@ index 6183805f6f9e..57812bf5bb30 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index fd4e0e1cd65e..9f9ddce39b33 100644
+index d29da0c6a7f2..0c0df758b874 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -183,6 +183,15 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);

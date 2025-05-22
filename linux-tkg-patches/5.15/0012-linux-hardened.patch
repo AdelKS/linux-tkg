@@ -102,13 +102,13 @@ index 7f75767a24f1..8a54bc818612 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 2288ad8ae88a..083f93971a4e 100644
+index 09de195b86f2..6ac6fce74532 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 15
- SUBLEVEL = 182
+ SUBLEVEL = 183
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Trick or Treat
@@ -361,7 +361,7 @@ index 29fea180a665..28d86671b089 100644
 -extern unsigned long align_vdso_addr(unsigned long);
  #endif /* _ASM_X86_ELF_H */
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index dbaea8a6175b..1e3baf9d0aab 100644
+index 1ebd67c95d86..8adccb45a0a7 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -410,6 +410,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
@@ -447,10 +447,10 @@ index 200ad5ceeb43..486c7146a71b 100644
  /* Used in PAGE_KERNEL_* macros which are reasonably used out-of-tree: */
  EXPORT_SYMBOL(__default_kernel_pte_mask);
 diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
-index 94a23fcb2073..84ec09a91387 100644
+index 11a43d373bae..89df2317c6da 100644
 --- a/arch/x86/mm/tlb.c
 +++ b/arch/x86/mm/tlb.c
-@@ -1171,6 +1171,7 @@ STATIC_NOPV void native_flush_tlb_global(void)
+@@ -1190,6 +1190,7 @@ STATIC_NOPV void native_flush_tlb_global(void)
  	raw_local_irq_save(flags);
  
  	cr4 = this_cpu_read(cpu_tlbstate.cr4);

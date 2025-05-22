@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 18c8fc60db93..7196200d9442 100644
+index 6938c8cd7a6f..0a52a5e50e41 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -559,17 +559,6 @@
@@ -20,7 +20,7 @@ index 18c8fc60db93..7196200d9442 100644
  	cio_ignore=	[S390]
  			See Documentation/s390/common_io.rst for details.
  
-@@ -4135,6 +4124,11 @@
+@@ -4150,6 +4139,11 @@
  			the specified number of seconds.  This is to be used if
  			your oopses keep scrolling off the screen.
  
@@ -102,13 +102,13 @@ index b47b3d0ce559..6ac658944390 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index d8d39fe5ef70..5bd6fd6ba1e6 100644
+index 80748b7c3540..6c443af0603e 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 1
- SUBLEVEL = 138
+ SUBLEVEL = 139
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Curry Ramen
@@ -209,7 +209,7 @@ index 97932fbf973d..40c6468c093a 100644
  
  #ifdef __AARCH64EB__
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 48ab6e8f2d1d..e90522463813 100644
+index 8e66bb443351..7b7447010ce8 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
 @@ -1229,8 +1229,7 @@ config VM86
@@ -373,7 +373,7 @@ index 5abe6c3d982a..11ba52e1bbe9 100644
  	native_write_cr4(cr4);
  }
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 62aaabea7e33..73a3d80a48d2 100644
+index 48cc1612df49..9b7811e061fd 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -466,6 +466,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
