@@ -102,13 +102,13 @@ index b47b3d0ce559..6ac658944390 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 80748b7c3540..6c443af0603e 100644
+index f86e26fa0b31..22ce605f0cfc 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 1
- SUBLEVEL = 139
+ SUBLEVEL = 140
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Curry Ramen
@@ -698,7 +698,7 @@ index 3500e3c94c4b..d26cfbe0aac8 100644
  	usb_debugfs_cleanup();
  	idr_destroy(&usb_bus_idr);
 diff --git a/fs/exec.c b/fs/exec.c
-index 2039414cc662..44596c10ed5d 100644
+index b65af8f9a4f9..638f256f8356 100644
 --- a/fs/exec.c
 +++ b/fs/exec.c
 @@ -64,6 +64,7 @@

@@ -102,13 +102,13 @@ index a66054d0763a..ca9fa0b0f325 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index a6a1942e2d00..08381cdfb7f3 100644
+index 51d975b35551..0d02b0cdfa9c 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 6
- SUBLEVEL = 91
+ SUBLEVEL = 92
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Pinguïn Aangedreven
@@ -1881,7 +1881,7 @@ index 03a24cb3951d..83ddedff0144 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index bc62bb2a3b13..b7c677bc5cf4 100644
+index 74737c35082b..a4181e55b508 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -180,6 +180,15 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
@@ -1900,7 +1900,7 @@ index bc62bb2a3b13..b7c677bc5cf4 100644
  #ifdef CONFIG_GCC_PLUGIN_LATENT_ENTROPY
  volatile unsigned long latent_entropy __latent_entropy;
  EXPORT_SYMBOL(latent_entropy);
-@@ -1303,6 +1312,25 @@ static void __free_pages_ok(struct page *page, unsigned int order,
+@@ -1302,6 +1311,25 @@ static void __free_pages_ok(struct page *page, unsigned int order,
  	__count_vm_events(PGFREE, 1 << order);
  }
  
@@ -1926,7 +1926,7 @@ index bc62bb2a3b13..b7c677bc5cf4 100644
  void __free_pages_core(struct page *page, unsigned int order)
  {
  	unsigned int nr_pages = 1 << order;
-@@ -1322,7 +1350,6 @@ void __free_pages_core(struct page *page, unsigned int order)
+@@ -1321,7 +1349,6 @@ void __free_pages_core(struct page *page, unsigned int order)
  	}
  	__ClearPageReserved(p);
  	set_page_count(p, 0);
@@ -1934,7 +1934,7 @@ index bc62bb2a3b13..b7c677bc5cf4 100644
  	atomic_long_add(nr_pages, &page_zone(page)->managed_pages);
  
  	if (page_contains_unaccepted(page, order)) {
-@@ -1517,6 +1544,12 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
+@@ -1516,6 +1543,12 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
  	 */
  	kernel_unpoison_pages(page, 1 << order);
  

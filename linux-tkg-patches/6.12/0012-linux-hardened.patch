@@ -102,13 +102,13 @@ index dcbb6f6caf6d..d9d2ea78cd4b 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 7a06c48ffbaa..beffa8b998b3 100644
+index 6e8afa78bbef..862865f213d1 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 12
- SUBLEVEL = 29
+ SUBLEVEL = 30
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Baby Opossum Posse
@@ -1631,7 +1631,7 @@ index 6183805f6f9e..57812bf5bb30 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d29da0c6a7f2..0c0df758b874 100644
+index ebe1ec661492..8430ed9832c4 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -183,6 +183,15 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
