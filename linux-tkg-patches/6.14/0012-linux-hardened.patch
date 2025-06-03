@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index f9e11cebc598..b7290ea5e0ba 100644
+index a8e98f75b610..51ad7a65494b 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -644,17 +644,6 @@
@@ -102,13 +102,13 @@ index 363b4950d542..da73569f9a20 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 70011eb4745f..9789509151cc 100644
+index 884279eb952d..a9db576d049e 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 14
- SUBLEVEL = 8
+ SUBLEVEL = 9
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Baby Opossum Posse
@@ -209,7 +209,7 @@ index 3f93f4eef953..ac3805f359de 100644
  
  #ifdef __AARCH64EB__
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f86e7072a5ba..3250cd5c0fe0 100644
+index 5439bff8850a..387c8f8070f1 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
 @@ -1253,8 +1253,7 @@ config VM86
@@ -358,7 +358,7 @@ index ac41b1e0940d..14cc3f9a5318 100644
  /* Used in PAGE_KERNEL_* macros which are reasonably used out-of-tree: */
  EXPORT_SYMBOL(__default_kernel_pte_mask);
 diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 01ea7c6df303..307cd90403c3 100644
+index 17c89dad4f7f..802ae59a0a8d 100644
 --- a/arch/x86/mm/init_64.c
 +++ b/arch/x86/mm/init_64.c
 @@ -104,9 +104,9 @@ static inline pgprot_t prot_sethuge(pgprot_t prot)
@@ -877,7 +877,7 @@ index 83d3ac97f826..6cc65fe5c431 100644
  }
  
 diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 5c6bea81a90e..a140c7b166f9 100644
+index c698f8415675..804da344bcc9 100644
 --- a/include/linux/highmem.h
 +++ b/include/linux/highmem.h
 @@ -257,6 +257,13 @@ static inline void tag_clear_highpage(struct page *page)
@@ -921,10 +921,10 @@ index 150fe2ae1b6b..67d22bb918c2 100644
  const struct kobj_ns_type_operations *kobj_child_ns_ops(const struct kobject *parent);
  const struct kobj_ns_type_operations *kobj_ns_ops(const struct kobject *kobj);
 diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index 93ea9c6672f0..7216ee1dae25 100644
+index 3d5814c6d251..a02f697e98d9 100644
 --- a/include/linux/perf_event.h
 +++ b/include/linux/perf_event.h
-@@ -1710,6 +1710,14 @@ static inline int perf_is_paranoid(void)
+@@ -1716,6 +1716,14 @@ static inline int perf_is_paranoid(void)
  
  int perf_allow_kernel(struct perf_event_attr *attr);
  
@@ -1102,10 +1102,10 @@ index 522fac29949a..ea69d98f930f 100644
  	  This option enables POSIX asynchronous I/O which may by used
  	  by some high performance threaded applications. Disabling
 diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
-index a60cb9d30cc0..b8efcd91d051 100644
+index 1f60883d78c6..f170f72125b2 100644
 --- a/io_uring/io_uring.c
 +++ b/io_uring/io_uring.c
-@@ -153,7 +153,7 @@ static __read_mostly DEFINE_STATIC_KEY_FALSE(io_key_has_sqarray);
+@@ -154,7 +154,7 @@ static __read_mostly DEFINE_STATIC_KEY_FALSE(io_key_has_sqarray);
  struct kmem_cache *req_cachep;
  static struct workqueue_struct *iou_wq __ro_after_init;
  
@@ -1114,7 +1114,7 @@ index a60cb9d30cc0..b8efcd91d051 100644
  static int __read_mostly sysctl_io_uring_group = -1;
  
  #ifdef CONFIG_SYSCTL
-@@ -163,8 +163,9 @@ static const struct ctl_table kernel_io_uring_disabled_table[] = {
+@@ -164,8 +164,9 @@ static const struct ctl_table kernel_io_uring_disabled_table[] = {
  		.data		= &sysctl_io_uring_disabled,
  		.maxlen		= sizeof(sysctl_io_uring_disabled),
  		.mode		= 0644,
@@ -1170,7 +1170,7 @@ index e089d2628c29..c7dc88894fc3 100644
  
  /**
 diff --git a/kernel/events/core.c b/kernel/events/core.c
-index 93ce810384c9..29d4d52086b2 100644
+index 6fa70b3826d0..e5a42489b9d0 100644
 --- a/kernel/events/core.c
 +++ b/kernel/events/core.c
 @@ -449,8 +449,13 @@ static struct kmem_cache *perf_event_cache;
@@ -1187,7 +1187,7 @@ index 93ce810384c9..29d4d52086b2 100644
  
  /* Minimum for 512 kiB + 1 user control page */
  int sysctl_perf_event_mlock __read_mostly = 512 + (PAGE_SIZE / 1024); /* 'free' kiB per user */
-@@ -12804,7 +12809,7 @@ SYSCALL_DEFINE5(perf_event_open,
+@@ -12814,7 +12819,7 @@ SYSCALL_DEFINE5(perf_event_open,
  		return err;
  
  	/* Do we allow access to perf_event_open(2) ? */
@@ -1197,7 +1197,7 @@ index 93ce810384c9..29d4d52086b2 100644
  		return err;
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index ca2ca3884f76..9bdb3d1566c5 100644
+index 5e640468baff..b90013da181b 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -83,6 +83,7 @@
@@ -1208,7 +1208,7 @@ index ca2ca3884f76..9bdb3d1566c5 100644
  #include <linux/oom.h>
  #include <linux/khugepaged.h>
  #include <linux/signalfd.h>
-@@ -2171,6 +2172,10 @@ __latent_entropy struct task_struct *copy_process(
+@@ -2172,6 +2173,10 @@ __latent_entropy struct task_struct *copy_process(
  	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
  		return ERR_PTR(-EINVAL);
  
@@ -1219,7 +1219,7 @@ index ca2ca3884f76..9bdb3d1566c5 100644
  	/*
  	 * Thread groups must share signals as well, and detached threads
  	 * can only be started up within the thread group.
-@@ -3324,6 +3329,12 @@ int ksys_unshare(unsigned long unshare_flags)
+@@ -3325,6 +3330,12 @@ int ksys_unshare(unsigned long unshare_flags)
  	if (unshare_flags & CLONE_NEWNS)
  		unshare_flags |= CLONE_FS;
  
@@ -1253,7 +1253,7 @@ index da77f3f5c1fe..1418fc33ed1f 100644
  	{
  		.procname	= "printk",
 diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 4dae6ac2e83f..e0e71852e968 100644
+index 513b1945987c..1e647e2a9eb6 100644
 --- a/kernel/softirq.c
 +++ b/kernel/softirq.c
 @@ -57,7 +57,7 @@ DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
@@ -1265,7 +1265,7 @@ index 4dae6ac2e83f..e0e71852e968 100644
  
  DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
  
-@@ -729,7 +729,7 @@ void __raise_softirq_irqoff(unsigned int nr)
+@@ -747,7 +747,7 @@ void __raise_softirq_irqoff(unsigned int nr)
  	or_softirq_pending(1UL << nr);
  }
  
@@ -1673,7 +1673,7 @@ index cda01071c7b1..61883423ef52 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 2cc8b3e36dc9..cf3181fe00c1 100644
+index a4a351996153..21d8b8db1e81 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -183,6 +183,15 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
@@ -2328,7 +2328,7 @@ index 42cb5dc9cb24..05b6bc5e6c2a 100644
  
  static struct ctl_table ipv4_net_table[] = {
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 0cbf81bf3d45..03f66875ed81 100644
+index 1b09b4d76c29..c1b57a48d11f 100644
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
 @@ -83,6 +83,7 @@
@@ -2339,7 +2339,7 @@ index 0cbf81bf3d45..03f66875ed81 100644
  
  #define FLAG_DATA		0x01 /* Incoming frame contained data.		*/
  #define FLAG_WIN_UPDATE		0x02 /* Incoming ACK was a window update.	*/
-@@ -6619,7 +6620,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+@@ -6627,7 +6628,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
  		SKB_DR_SET(reason, TCP_RFC7323_PAWS);
  		goto discard_and_undo;
  	}
