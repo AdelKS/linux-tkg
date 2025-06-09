@@ -1,6 +1,54 @@
 
 #!/bin/bash
 
+_patchwork() {
+  local cur_word="${COMP_WORDS[COMP_CWORD]}"
+  local prev_word="${COMP_WORDS[COMP_CWORD-1]}"
+
+  case "${COMP_WORDS[1]}" in
+    print)
+      # Handle 'print' command
+      if [[ $COMP_CWORD -eq 2 ]]; then
+          COMPREPLY=($(compgen -W "unclean" -- "$cur_word"))
+      elif [[ $COMP_CWORD -eq 3 && "${COMP_WORDS[2]}" == "unclean" ]]; then
+          COMPREPLY=($(compgen -W "include-eol" -- "$cur_word"))
+      fi
+      ;;
+
+    rebase)
+      # Handle 'rebase' command
+      if [[ $COMP_CWORD -eq 2 ]]; then
+        COMPREPLY=($(compgen -W "start end" -- "$cur_word"))
+      elif [[ $COMP_CWORD -eq 3 ]]; then
+        case "${COMP_WORDS[2]}" in
+          start)
+            # Generate dynamic options for 'rebase start'
+            local opts="include-eol"
+            # Find all x.y directories and their patches
+            local opts="$opts $(find . -name "*.patch" -printf '%P\n' 2>/dev/null)"
+            COMPREPLY=($(compgen -W "$opts" -- "$cur_word"))
+            ;;
+          end)
+            COMPREPLY=()  # No further arguments for 'end'
+            ;;
+        esac
+      fi
+      ;;
+
+    *)
+      # Main command suggestions (print/rebase)
+      if [[ $COMP_CWORD -eq 1 ]]; then
+          COMPREPLY=($(compgen -W "print rebase" -- "$cur_word"))
+      fi
+      ;;
+  esac
+}
+
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+  # Register completion when sourced
+  complete -F _patchwork patchwork
+fi
+
 msg2() {
   [[ "$_silent" = "true" ]] || echo -e " \033[1;34m->\033[1;0m \033[1;1m$1\033[1;0m" >&2
 }
@@ -16,19 +64,6 @@ warning() {
 plain() {
   [[ "$_silent" = "true" ]] || echo -e "$1" >&2
 }
-
-# get env and customization
-declare -p -x > current_env
-source ../customization.cfg
-if [ -f "$_EXT_CONFIG_PATH" ]; then
-  source "$_EXT_CONFIG_PATH"
-fi
-. ./current_env
-
-# needed for things to work in 'prepare'
-_where=$(realpath ..)
-
-. ../linux-tkg-config/prepare
 
 _prepare_kernel(){
 
@@ -216,54 +251,70 @@ _get_unclean_patch_list(){
   _silent="$_old_silent"
 }
 
-if [[ "$1" == 'print' && "$2" == 'unclean' ]]; then
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
-  shift; shift;
-  _get_unclean_patch_list 1000 "$@"
+  # get env and customization
+  declare -p -x > current_env
+  source ../customization.cfg
+  if [ -f "$_EXT_CONFIG_PATH" ]; then
+    source "$_EXT_CONFIG_PATH"
+  fi
+  . ./current_env
 
-  if [[ "${#_unclean_patches}" != 0 ]]; then
-    for _patch in "${_unclean_patches[@]}"; do
-      echo $_patch
-    done
-    echo "${#_unclean_patches} patches don't apply"
+  # needed for things to work in 'prepare'
+  _where=$(realpath ..)
+
+  . ../linux-tkg-config/prepare
+
+  if [[ "$1" == 'print' && "$2" == 'unclean' ]]; then
+
+    shift; shift;
+    _get_unclean_patch_list 1000 "$@"
+
+    if [[ "${#_unclean_patches}" != 0 ]]; then
+      for _patch in "${_unclean_patches[@]}"; do
+        echo $_patch
+      done
+      echo "${#_unclean_patches} patches don't apply"
+    else
+      msg2 "All patches apply cleanly!"
+    fi
+
+  elif [[ "$1" == 'rebase' && "$2" == 'start' ]]; then
+
+    _patch="$3"
+    if [[ -z "$3" || "$3" == "include-eol" ]]; then
+      _get_unclean_patch_list 1 "$3"
+      [[ "${#_unclean_patches}" == 0 ]] && msg2 "All patches good!" && exit 0
+      _patch="${_unclean_patches[0]}"
+    fi
+
+      _rebase_start "$_patch"
+
+    elif [[ "$1" == 'rebase' && "$2" == 'end' ]]; then
+
+      _rebase_end
+
+    elif [[ "$1" == 'prepare-kernel' ]]; then
+
+      _prepare_kernel
+
   else
-    msg2 "All patches apply cleanly!"
+
+      msg2 "Argument not recognized, options are:
+            - 'print'
+              - 'unclean': prints list of patches that don't apply against latest kernel .z version,
+                          for each currently maintained x.y kernel version (full version string being x.y.z)
+                - 'include-eol': check patches for EOL kernels too
+            - 'rebase'
+              - 'start [<X.Y/patch-path>|include-eol]' : sets a workfolder with a kernel where you can do any number of extra commits or commit edits on top
+                                            Note: the first commit should be left intact so re-creating the patch (after edits) still works.
+                - [no argument]: sets a workfolder of the first kernel version x.y.z where a patch
+                                doesn't apply and starts a 'git am' with that patch.
+                - 'include-eol': test patches for EOL kernels too
+                - <x.y/patch-name> [optional]: sets a workfolder of kernel version x.y.z (where .z is the latest) and applies the given patch in argument
+              - 'end' : Rebase done, re-create the patch that has been pulled with the user added changes."
+      exit 1
+
   fi
-
-elif [[ "$1" == 'rebase' && "$2" == 'start' ]]; then
-
-  _patch="$3"
-  if [[ -z "$3" || "$3" == "include-eol" ]]; then
-    _get_unclean_patch_list 1 "$3"
-    [[ "${#_unclean_patches}" == 0 ]] && msg2 "All patches good!" && exit 0
-    _patch="${_unclean_patches[0]}"
-  fi
-
-  _rebase_start "$_patch"
-
-elif [[ "$1" == 'rebase' && "$2" == 'end' ]]; then
-
-  _rebase_end
-
-elif [[ "$1" == 'prepare-kernel' ]]; then
-
-  _prepare_kernel
-
-else
-
-  msg2 "Argument not recognized, options are:
-        - 'print'
-          - 'unclean': prints list of patches that don't apply against latest kernel .z version,
-                       for each currently maintained x.y kernel version (full version string being x.y.z)
-            - 'include-eol': check patches for EOL kernels too
-        - 'rebase'
-          - 'start [<X.Y/patch-path>|include-eol]' : sets a workfolder with a kernel where you can do any number of extra commits or commit edits on top
-                                         Note: the first commit should be left intact so re-creating the patch (after edits) still works.
-            - [no argument]: sets a workfolder of the first kernel version x.y.z where a patch
-                             doesn't apply and starts a 'git am' with that patch.
-            - 'include-eol': test patches for EOL kernels too
-            - <x.y/patch-name> [optional]: sets a workfolder of kernel version x.y.z (where .z is the latest) and applies the given patch in argument
-          - 'end' : Rebase done, re-create the patch that has been pulled with the user added changes."
-  exit 1
-
 fi
