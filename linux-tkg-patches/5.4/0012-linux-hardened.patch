@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 9975dcab99c3..b14a2f452a09 100644
+index 6d9acc3f977b..41aab063ca19 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -509,16 +509,6 @@
@@ -107,13 +107,13 @@ index 5cf601c94e35..1fd8046af9f3 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 70d2e8cc6f9f..90759622fe2f 100644
+index cc8e29781c25..edbad1ecf895 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 4
- SUBLEVEL = 293
+ SUBLEVEL = 294
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Kleptomaniac Octopus
@@ -1548,7 +1548,7 @@ index dd55fd475f12..64a6e414e8d6 100644
  	if (err)
  		return err;
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 1728aa77861c..9868846c1412 100644
+index e71f96bff1dc..05bd054a2480 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -106,6 +106,11 @@
@@ -1563,7 +1563,7 @@ index 1728aa77861c..9868846c1412 100644
  
  /*
   * Minimum number of threads to boot the kernel
-@@ -1808,6 +1813,10 @@ static __latent_entropy struct task_struct *copy_process(
+@@ -1899,6 +1904,10 @@ static __latent_entropy struct task_struct *copy_process(
  	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
  		return ERR_PTR(-EINVAL);
  
@@ -1574,7 +1574,7 @@ index 1728aa77861c..9868846c1412 100644
  	/*
  	 * Thread groups must share signals as well, and detached threads
  	 * can only be started up within the thread group.
-@@ -2866,6 +2875,12 @@ int ksys_unshare(unsigned long unshare_flags)
+@@ -2948,6 +2957,12 @@ int ksys_unshare(unsigned long unshare_flags)
  	if (unshare_flags & CLONE_NEWNS)
  		unshare_flags |= CLONE_FS;
  
@@ -2102,7 +2102,7 @@ index eeebbb20accf..032724415adc 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index a0c01c3575bc..304d8a68ec89 100644
+index 66e4b78786a9..df97aab434cf 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -69,6 +69,7 @@
