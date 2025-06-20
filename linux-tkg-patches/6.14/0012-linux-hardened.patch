@@ -102,13 +102,13 @@ index 363b4950d542..da73569f9a20 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 884279eb952d..a9db576d049e 100644
+index 48d2ce96398b..3b007cfa4aaa 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 14
- SUBLEVEL = 9
+ SUBLEVEL = 11
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Baby Opossum Posse

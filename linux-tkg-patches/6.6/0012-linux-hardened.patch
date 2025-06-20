@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index f95734ceb82b..4e22940b970d 100644
+index 315a817e3380..475741399818 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -586,17 +586,6 @@
@@ -102,13 +102,13 @@ index a66054d0763a..ca9fa0b0f325 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 51d975b35551..0d02b0cdfa9c 100644
+index 9625d9072c77..ef201319c9e6 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 6
- SUBLEVEL = 92
+ SUBLEVEL = 94
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Pinguïn Aangedreven
@@ -145,7 +145,7 @@ index 09603e0bc2cc..0790c6e0a7e5 100644
  	  Kernel stack offset randomization is controlled by kernel boot param
  	  "randomize_kstack_offset=on/off", and this config chooses the default
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 658c6a61ab6f..349d9e53ae21 100644
+index 4ecba0690938..4cfce40f6da0 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
 @@ -1639,6 +1639,7 @@ config RODATA_FULL_DEFAULT_ENABLED
@@ -165,7 +165,7 @@ index 658c6a61ab6f..349d9e53ae21 100644
  	  Randomizes the virtual address at which the kernel image is
  	  loaded, as a security feature that deters exploit attempts
 diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 60af93c04b45..0bc03385c1cf 100644
+index a4fc913d1e49..5924a7a17dc5 100644
 --- a/arch/arm64/configs/defconfig
 +++ b/arch/arm64/configs/defconfig
 @@ -1,4 +1,3 @@
@@ -373,7 +373,7 @@ index a496d9dc75d9..7bcb4d15b5c1 100644
  	native_write_cr4(cr4);
  }
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 067e31fb9e16..739f745d8627 100644
+index b6e43dad577a..66ddabb144fd 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -450,6 +450,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
@@ -385,10 +385,10 @@ index 067e31fb9e16..739f745d8627 100644
  	lockdep_assert_irqs_disabled();
  
 diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 419353904173..26eba3c056a2 100644
+index 33c235e9d0d3..0e56e0f6b7a0 100644
 --- a/arch/x86/kernel/process.c
 +++ b/arch/x86/kernel/process.c
-@@ -686,6 +686,7 @@ void speculation_ctrl_update_current(void)
+@@ -692,6 +692,7 @@ void speculation_ctrl_update_current(void)
  static inline void cr4_toggle_bits_irqsoff(unsigned long mask)
  {
  	unsigned long newval, cr4 = this_cpu_read(cpu_tlbstate.cr4);
@@ -396,7 +396,7 @@ index 419353904173..26eba3c056a2 100644
  
  	newval = cr4 ^ mask;
  	if (newval != cr4) {
-@@ -1036,9 +1037,9 @@ unsigned long arch_align_stack(unsigned long sp)
+@@ -1039,9 +1040,9 @@ unsigned long arch_align_stack(unsigned long sp)
  unsigned long arch_randomize_brk(struct mm_struct *mm)
  {
  	if (mmap_is_ia32())
@@ -443,7 +443,7 @@ index b63403d7179d..a40bcad396d9 100644
  /* Used in PAGE_KERNEL_* macros which are reasonably used out-of-tree: */
  EXPORT_SYMBOL(__default_kernel_pte_mask);
 diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index aa69353da49f..c11ea9e4eccf 100644
+index 11eb93e13ce1..a17da829b955 100644
 --- a/arch/x86/mm/init_64.c
 +++ b/arch/x86/mm/init_64.c
 @@ -104,9 +104,9 @@ static inline pgprot_t prot_sethuge(pgprot_t prot)
@@ -594,7 +594,7 @@ index 7d338e9c0657..64ac3c36fa1a 100644
  ifdef CONFIG_USB_ONBOARD_HUB
  usbcore-y			+= ../misc/onboard_usb_hub_pdevs.o
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 760283a541b4..ac7b434ca429 100644
+index 855356752380..e88cb0b096d4 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
 @@ -5382,6 +5382,12 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
@@ -938,7 +938,7 @@ index 0dea8d0fdb0b..4a048f14b374 100644
  }
  
 diff --git a/include/linux/highmem.h b/include/linux/highmem.h
-index 75607d4ba26c..1567b66b773a 100644
+index 714966d5701e..85f921207fe6 100644
 --- a/include/linux/highmem.h
 +++ b/include/linux/highmem.h
 @@ -257,6 +257,13 @@ static inline void tag_clear_highpage(struct page *page)
@@ -991,10 +991,10 @@ index be707748e7ce..40b0d6710f10 100644
  const struct kobj_ns_type_operations *kobj_child_ns_ops(const struct kobject *parent);
  const struct kobj_ns_type_operations *kobj_ns_ops(const struct kobject *kobj);
 diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index fcb834dd75c2..95e29e60c5a3 100644
+index 90c782749b05..d9d438bd19f7 100644
 --- a/include/linux/perf_event.h
 +++ b/include/linux/perf_event.h
-@@ -1607,6 +1607,14 @@ static inline int perf_is_paranoid(void)
+@@ -1613,6 +1613,14 @@ static inline int perf_is_paranoid(void)
  
  int perf_allow_kernel(struct perf_event_attr *attr);
  
@@ -1196,7 +1196,7 @@ index 8b630143c720..e5c701b44358 100644
  	  This option enables POSIX asynchronous I/O which may by used
  	  by some high performance threaded applications. Disabling
 diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
-index db592fa549b7..3a6070d878f4 100644
+index ff1a93d405e9..17cba49fcc2e 100644
 --- a/io_uring/io_uring.c
 +++ b/io_uring/io_uring.c
 @@ -150,7 +150,7 @@ static void io_queue_sqe(struct io_kiocb *req);
@@ -1234,7 +1234,7 @@ index 9c8e5f732c4c..72c7a561599c 100644
  		pr_err("audit: error setting audit state (%d)\n",
  		       audit_default);
 diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-index 81fd1bb99416..2d9bc85f2073 100644
+index 5eaaf95048ab..ca53b69088c7 100644
 --- a/kernel/bpf/core.c
 +++ b/kernel/bpf/core.c
 @@ -561,7 +561,7 @@ void bpf_prog_kallsyms_del_all(struct bpf_prog *fp)
@@ -1264,7 +1264,7 @@ index dac4df77e376..68bb3279b14f 100644
  
  /**
 diff --git a/kernel/events/core.c b/kernel/events/core.c
-index 987807b1040a..41e4a5a14aca 100644
+index 563f39518f7f..96afa9a5a856 100644
 --- a/kernel/events/core.c
 +++ b/kernel/events/core.c
 @@ -419,8 +419,13 @@ static struct kmem_cache *perf_event_cache;
@@ -1281,7 +1281,7 @@ index 987807b1040a..41e4a5a14aca 100644
  
  /* Minimum for 512 kiB + 1 user control page */
  int sysctl_perf_event_mlock __read_mostly = 512 + (PAGE_SIZE / 1024); /* 'free' kiB per user */
-@@ -12518,7 +12523,7 @@ SYSCALL_DEFINE5(perf_event_open,
+@@ -12543,7 +12548,7 @@ SYSCALL_DEFINE5(perf_event_open,
  		return err;
  
  	/* Do we allow access to perf_event_open(2) ? */
@@ -1291,7 +1291,7 @@ index 987807b1040a..41e4a5a14aca 100644
  		return err;
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 97f433fb4b5e..3be5493ee3ad 100644
+index 7966c9a1c163..64020241cd84 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -81,6 +81,7 @@
@@ -1302,7 +1302,7 @@ index 97f433fb4b5e..3be5493ee3ad 100644
  #include <linux/oom.h>
  #include <linux/khugepaged.h>
  #include <linux/signalfd.h>
-@@ -2263,6 +2264,10 @@ __latent_entropy struct task_struct *copy_process(
+@@ -2264,6 +2265,10 @@ __latent_entropy struct task_struct *copy_process(
  	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
  		return ERR_PTR(-EINVAL);
  
@@ -1313,7 +1313,7 @@ index 97f433fb4b5e..3be5493ee3ad 100644
  	/*
  	 * Thread groups must share signals as well, and detached threads
  	 * can only be started up within the thread group.
-@@ -3416,6 +3421,12 @@ int ksys_unshare(unsigned long unshare_flags)
+@@ -3417,6 +3422,12 @@ int ksys_unshare(unsigned long unshare_flags)
  	if (unshare_flags & CLONE_NEWNS)
  		unshare_flags |= CLONE_FS;
  
@@ -1360,10 +1360,10 @@ index fec804b79080..106125f3b34d 100644
  	struct rcu_head *next, *list;
  	unsigned long flags;
 diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
-index fda08520c75c..d821359d5d5b 100644
+index 1fb3b7a0ed5d..84e4331e951c 100644
 --- a/kernel/rcu/tree.c
 +++ b/kernel/rcu/tree.c
-@@ -2475,7 +2475,7 @@ static __latent_entropy void rcu_core(void)
+@@ -2479,7 +2479,7 @@ static __latent_entropy void rcu_core(void)
  		queue_work_on(rdp->cpu, rcu_gp_wq, &rdp->strict_work);
  }
  
@@ -1373,7 +1373,7 @@ index fda08520c75c..d821359d5d5b 100644
  	rcu_core();
  }
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 268e2a49b964..49d64e412be9 100644
+index 6ce3028e6e85..68316754d0e6 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -12436,7 +12436,7 @@ static int newidle_balance(struct rq *this_rq, struct rq_flags *rf)
@@ -1386,7 +1386,7 @@ index 268e2a49b964..49d64e412be9 100644
  	struct rq *this_rq = this_rq();
  	enum cpu_idle_type idle = this_rq->idle_balance ?
 diff --git a/kernel/softirq.c b/kernel/softirq.c
-index f24d80cf20bd..8d17e2bb4bf9 100644
+index d9e37f3fa130..b43416ddcb65 100644
 --- a/kernel/softirq.c
 +++ b/kernel/softirq.c
 @@ -56,7 +56,7 @@ DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
@@ -1398,7 +1398,7 @@ index f24d80cf20bd..8d17e2bb4bf9 100644
  
  DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
  
-@@ -557,7 +557,7 @@ static void handle_softirqs(bool ksirqd)
+@@ -575,7 +575,7 @@ static void handle_softirqs(bool ksirqd)
  		kstat_incr_softirqs_this_cpu(vec_nr);
  
  		trace_softirq_entry(vec_nr);
@@ -1407,7 +1407,7 @@ index f24d80cf20bd..8d17e2bb4bf9 100644
  		trace_softirq_exit(vec_nr);
  		if (unlikely(prev_count != preempt_count())) {
  			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
-@@ -706,7 +706,7 @@ void __raise_softirq_irqoff(unsigned int nr)
+@@ -724,7 +724,7 @@ void __raise_softirq_irqoff(unsigned int nr)
  	or_softirq_pending(1UL << nr);
  }
  
@@ -1416,7 +1416,7 @@ index f24d80cf20bd..8d17e2bb4bf9 100644
  {
  	softirq_vec[nr].action = action;
  }
-@@ -766,8 +766,7 @@ static bool tasklet_clear_sched(struct tasklet_struct *t)
+@@ -784,8 +784,7 @@ static bool tasklet_clear_sched(struct tasklet_struct *t)
  	return false;
  }
  
@@ -1426,7 +1426,7 @@ index f24d80cf20bd..8d17e2bb4bf9 100644
  				  unsigned int softirq_nr)
  {
  	struct tasklet_struct *list;
-@@ -811,14 +810,14 @@ static void tasklet_action_common(struct softirq_action *a,
+@@ -829,14 +828,14 @@ static void tasklet_action_common(struct softirq_action *a,
  	}
  }
  
@@ -1533,10 +1533,10 @@ index 354a2d294f52..6220005d6226 100644
  EXPORT_SYMBOL(proc_dointvec_ms_jiffies);
  EXPORT_SYMBOL(proc_dostring);
 diff --git a/kernel/time/hrtimer.c b/kernel/time/hrtimer.c
-index 877535b06e73..7a5fa1600e33 100644
+index 6d9da768604d..2fae520c57f8 100644
 --- a/kernel/time/hrtimer.c
 +++ b/kernel/time/hrtimer.c
-@@ -1762,7 +1762,7 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
+@@ -1823,7 +1823,7 @@ static void __hrtimer_run_queues(struct hrtimer_cpu_base *cpu_base, ktime_t now,
  	}
  }
  
@@ -1881,7 +1881,7 @@ index 03a24cb3951d..83ddedff0144 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 74737c35082b..a4181e55b508 100644
+index 44011ebecddf..03a618a49e58 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -180,6 +180,15 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
@@ -2565,7 +2565,7 @@ index 6ac890b4073f..6195766bd373 100644
  };
  
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 10d38ec0ff5a..5ed99fbc115f 100644
+index a172248b6678..91d55c4857f2 100644
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
 @@ -82,6 +82,7 @@
@@ -2576,7 +2576,7 @@ index 10d38ec0ff5a..5ed99fbc115f 100644
  
  #define FLAG_DATA		0x01 /* Incoming frame contained data.		*/
  #define FLAG_WIN_UPDATE		0x02 /* Incoming ACK was a window update.	*/
-@@ -6482,7 +6483,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+@@ -6490,7 +6491,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
  		SKB_DR_SET(reason, TCP_RFC7323_PAWS);
  		goto discard_and_undo;
  	}

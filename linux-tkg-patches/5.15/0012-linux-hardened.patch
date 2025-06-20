@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 4bc5d8c97d09..e3c86616ccee 100644
+index e0670357d23f..a9e0acc52716 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -541,17 +541,6 @@
@@ -102,13 +102,13 @@ index 7f75767a24f1..8a54bc818612 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 0840259608be..002a7845f667 100644
+index 74f8a3f0ae19..d6a545959f45 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 15
- SUBLEVEL = 184
+ SUBLEVEL = 185
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Trick or Treat
@@ -1467,7 +1467,7 @@ index 520a890a2a6f..dc01037960f7 100644
  		return err;
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 23ffcf8a859c..654886480cd6 100644
+index 22313f31dd8c..555804a6595e 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -82,6 +82,7 @@
@@ -1478,7 +1478,7 @@ index 23ffcf8a859c..654886480cd6 100644
  #include <linux/oom.h>
  #include <linux/khugepaged.h>
  #include <linux/signalfd.h>
-@@ -1960,6 +1961,10 @@ static __latent_entropy struct task_struct *copy_process(
+@@ -2045,6 +2046,10 @@ static __latent_entropy struct task_struct *copy_process(
  	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
  		return ERR_PTR(-EINVAL);
  
@@ -1489,7 +1489,7 @@ index 23ffcf8a859c..654886480cd6 100644
  	/*
  	 * Thread groups must share signals as well, and detached threads
  	 * can only be started up within the thread group.
-@@ -3077,6 +3082,12 @@ int ksys_unshare(unsigned long unshare_flags)
+@@ -3153,6 +3158,12 @@ int ksys_unshare(unsigned long unshare_flags)
  	if (unshare_flags & CLONE_NEWNS)
  		unshare_flags |= CLONE_FS;
  
@@ -1542,7 +1542,7 @@ index ea707ee9ddac..6c5e0b36d1a6 100644
  	struct rq *this_rq = this_rq();
  	enum cpu_idle_type idle = this_rq->idle_balance ?
 diff --git a/kernel/softirq.c b/kernel/softirq.c
-index dc60f0c66a25..ab4eb819ca63 100644
+index d63d827da2d6..e97f1cca668d 100644
 --- a/kernel/softirq.c
 +++ b/kernel/softirq.c
 @@ -56,7 +56,7 @@ DEFINE_PER_CPU_ALIGNED(irq_cpustat_t, irq_stat);
@@ -1554,7 +1554,7 @@ index dc60f0c66a25..ab4eb819ca63 100644
  
  DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
  
-@@ -555,7 +555,7 @@ static void handle_softirqs(bool ksirqd)
+@@ -573,7 +573,7 @@ static void handle_softirqs(bool ksirqd)
  		kstat_incr_softirqs_this_cpu(vec_nr);
  
  		trace_softirq_entry(vec_nr);
@@ -1563,7 +1563,7 @@ index dc60f0c66a25..ab4eb819ca63 100644
  		trace_softirq_exit(vec_nr);
  		if (unlikely(prev_count != preempt_count())) {
  			pr_err("huh, entered softirq %u %s %p with preempt_count %08x, exited with %08x?\n",
-@@ -704,7 +704,7 @@ void __raise_softirq_irqoff(unsigned int nr)
+@@ -722,7 +722,7 @@ void __raise_softirq_irqoff(unsigned int nr)
  	or_softirq_pending(1UL << nr);
  }
  
@@ -1572,7 +1572,7 @@ index dc60f0c66a25..ab4eb819ca63 100644
  {
  	softirq_vec[nr].action = action;
  }
-@@ -764,8 +764,7 @@ static bool tasklet_clear_sched(struct tasklet_struct *t)
+@@ -782,8 +782,7 @@ static bool tasklet_clear_sched(struct tasklet_struct *t)
  	return false;
  }
  
@@ -1582,7 +1582,7 @@ index dc60f0c66a25..ab4eb819ca63 100644
  				  unsigned int softirq_nr)
  {
  	struct tasklet_struct *list;
-@@ -804,14 +803,14 @@ static void tasklet_action_common(struct softirq_action *a,
+@@ -822,14 +821,14 @@ static void tasklet_action_common(struct softirq_action *a,
  	}
  }
  
@@ -1986,7 +1986,7 @@ index f8a2f15fc5a2..472d2253a5fd 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index c177d3ab3bd0..58eed63c9d77 100644
+index 8a1d1c1ca445..ee3df844a168 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -155,6 +155,15 @@ struct pcpu_drain {
@@ -2708,7 +2708,7 @@ index 1f22e72074fd..828979de34ba 100644
  };
  
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 6bd28ac949b4..4912cfd4ee95 100644
+index 8859a38b45d5..aae7cf29a5ae 100644
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
 @@ -82,6 +82,7 @@
@@ -2719,7 +2719,7 @@ index 6bd28ac949b4..4912cfd4ee95 100644
  
  #define FLAG_DATA		0x01 /* Incoming frame contained data.		*/
  #define FLAG_WIN_UPDATE		0x02 /* Incoming ACK was a window update.	*/
-@@ -6375,7 +6376,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+@@ -6383,7 +6384,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
  	    tcp_paws_reject(&tp->rx_opt, 0))
  		goto discard_and_undo;
  
