@@ -1,7 +1,7 @@
-From a952b92635b7e1eaf6aeaaf45e8d40c151780c09 Mon Sep 17 00:00:00 2001
+From c06c8b8d51ac86a2ffe3b19ef910eaeae9e25e57 Mon Sep 17 00:00:00 2001
 From: Michal Suchanek <msuchanek@suse.de>
 Date: Wed, 7 Feb 2018 15:16:04 +0100
-Subject: [PATCH 1/2] Add ksym-provides tool.
+Subject: [PATCH 1/3] Add ksym-provides tool.
 
 Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 Signed-off-by: Adel KARA SLIMANE <adel.ks@zegrapher.com>
@@ -238,10 +238,10 @@ index 419697fdf289..da6c327afa43 100644
 2.50.1
 
 
-From 62ef3beee4fc1169713cede1713e913ffbb99cc8 Mon Sep 17 00:00:00 2001
+From f7430eea233a1c7085ec4843bd6e34659fc66215 Mon Sep 17 00:00:00 2001
 From: Adel KARA SLIMANE <adel.ks@zegrapher.com>
 Date: Sat, 5 Jul 2025 18:46:55 +0200
-Subject: [PATCH 2/2] suse: scripts/package/kernel.spec: use /usr/lib/modules
+Subject: [PATCH 2/3] suse: scripts/package/kernel.spec: use /usr/lib/modules
  instead of /lib/modules
 
 ---
@@ -364,6 +364,33 @@ index da6c327afa43..44e2a8dd6ff3 100644
  %endif
  
  %files syms
+-- 
+2.50.1
+
+
+From 11f93a202eef3838c2aea9a89d331ba32b3d9e23 Mon Sep 17 00:00:00 2001
+From: Adel KARA SLIMANE <adel.ks@zegrapher.com>
+Date: Sat, 26 Jul 2025 23:28:11 +0200
+Subject: [PATCH 3/3] scripts/package/kernel.spec: define RPM_BUILD_ROOT when
+ calling Suse tools
+
+---
+ scripts/package/kernel.spec | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/package/kernel.spec b/scripts/package/kernel.spec
+index 44e2a8dd6ff3..d0fad3df94da 100644
+--- a/scripts/package/kernel.spec
++++ b/scripts/package/kernel.spec
+@@ -126,7 +126,7 @@ if %{make} %{makeflags} run-command KBUILD_RUN_COMMAND='test -d ${srctree}/arch/
+ fi
+ ln -fns /usr/src/kernels/%{KERNELRELEASE} %{buildroot}/usr/lib/modules/%{KERNELRELEASE}/build
+ %if %{with_devel}
+-%{make} %{makeflags} run-command KBUILD_RUN_COMMAND='${srctree}/scripts/package/install-extmod-build %{buildroot}/usr/src/kernels/%{KERNELRELEASE}'
++%{make} %{makeflags} run-command KBUILD_RUN_COMMAND='${srctree}/scripts/package/install-extmod-build %{buildroot}/usr/src/kernels/%{KERNELRELEASE}' RPM_BUILD_ROOT=%{buildroot}
+ %endif
+ 
+ cp -r doc %{buildroot}/usr/src/kernels/%{KERNELRELEASE}/
 -- 
 2.50.1
 
