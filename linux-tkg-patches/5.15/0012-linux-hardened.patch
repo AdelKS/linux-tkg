@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index f12ba5c12b91..8d7a1aea8061 100644
+index 25e07ac5c1ca..1488362c6dd9 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -541,17 +541,6 @@
@@ -20,7 +20,7 @@ index f12ba5c12b91..8d7a1aea8061 100644
  	cio_ignore=	[S390]
  			See Documentation/s390/common_io.rst for details.
  	clk_ignore_unused
-@@ -3965,6 +3954,11 @@
+@@ -3966,6 +3955,11 @@
  			the specified number of seconds.  This is to be used if
  			your oopses keep scrolling off the screen.
  
@@ -102,13 +102,13 @@ index 7f75767a24f1..8a54bc818612 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 1d707d015784..85e5aa534657 100644
+index bc6478fae988..0977dd14dcf7 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 15
- SUBLEVEL = 192
+ SUBLEVEL = 193
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Trick or Treat
@@ -209,7 +209,7 @@ index 97932fbf973d..40c6468c093a 100644
  
  #ifdef __AARCH64EB__
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 3b9ba4b227d5..fc93ffb74fe2 100644
+index 68a7a1d989f9..108d7caef650 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
 @@ -1181,8 +1181,7 @@ config VM86
@@ -361,7 +361,7 @@ index 29fea180a665..28d86671b089 100644
 -extern unsigned long align_vdso_addr(unsigned long);
  #endif /* _ASM_X86_ELF_H */
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index b16a77386236..f4b94c501b86 100644
+index 96643de567d8..b697dcf38d5a 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -410,6 +410,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
