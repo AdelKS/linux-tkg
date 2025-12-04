@@ -1,10 +1,25 @@
 #!/bin/bash
 
 # List of kernels that are maintained upstream
-_current_kernels=("6.17" "6.16" "6.15" "6.12" "6.6" "6.1" "5.15" "5.10" "5.4")
+_current_kernels=("6.18" "6.17" "6.12" "6.6" "6.1" "5.15" "5.10" "5.4")
 
 # List of kernels that are no longer maintained either upstream or locally
-_eol_kernels=("6.14" "6.13" "6.11" "6.10" "6.9" "6.8" "6.7" "6.5" "6.4" "6.3" "6.2" "6.0" "5.19" "5.18" "5.17" "5.16" "5.14" "5.13" "5.12" "5.11" "5.9" "5.8" "5.7")
+_eol_kernels=("6.16" "6.15" "6.14" "6.13" "6.11" "6.10" "6.9" "6.8" "6.7" "6.5" "6.4" "6.3" "6.2" "6.0" "5.19" "5.18" "5.17" "5.16" "5.14" "5.13" "5.12" "5.11" "5.9" "5.8" "5.7")
+
+_deprecated_config_vars=(
+  "_use_tmpfs"
+  "_source_in_tmpfs"
+  "_tmpfs_path"
+  "_cacule_rdb"
+  "_cacule_rdb_interval"
+  "_tt_high_hz"
+  "_x86_64_isalvl"
+  "_dracut_options"
+  "_bcachefs"
+  "_eevdf_sched_ext_support"
+  "_debugdisable_disabled_entry"
+  "_debugdisable_enabled_entry"
+)
 
 typeset -Ag _all_scheds
 _all_scheds=(
@@ -99,24 +114,28 @@ _rt_rev_map=(
 _undefine() {
   for _config_name in "$@"; do
     scripts/config -k --undefine "${_config_name}"
+    echo "Undefined ${_config_name}" >> "$_where"/logs/prepare.log.txt
   done
 }
 
 _enable() {
   for _config_name in "$@"; do
     scripts/config -k --enable "${_config_name}"
+    echo "Enabled ${_config_name}" >> "$_where"/logs/prepare.log.txt
   done
 }
 
 _disable() {
   for _config_name in "$@"; do
     scripts/config -k --disable "${_config_name}"
+    echo "Disabled ${_config_name}" >> "$_where"/logs/prepare.log.txt
   done
 }
 
 _module() {
   for _config_name in "$@"; do
     scripts/config -k --module "${_config_name}"
+    echo "Defined ${_config_name} as module" >> "$_where"/logs/prepare.log.txt
   done
 }
 
@@ -566,19 +585,6 @@ _tkg_initscript() {
     msg2 "git clone --depth=1 https://github.com/Frogging-Family/linux-tkg.git"
     exit 1
   fi
-
-  local _deprecated_config_vars=(
-    "_use_tmpfs"
-    "_source_in_tmpfs"
-    "_tmpfs_path"
-    "_cacule_rdb"
-    "_cacule_rdb_interval"
-    "_tt_high_hz"
-    "_x86_64_isalvl"
-    "_dracut_options"
-    "_bcachefs"
-    "_eevdf_sched_ext_support"
-  )
 
   for _deprecated_var in "${_deprecated_config_vars[@]}"; do
     if [ -n "${!_deprecated_var}" ]; then
@@ -1103,7 +1109,8 @@ _tkg_srcprep() {
 
   # Disable some debugging
   if [ "${_debugdisable}" = "true" ]; then
-    _disable "SLUB_DEBUG" "PM_DEBUG" "PM_ADVANCED_DEBUG" "PM_SLEEP_DEBUG" "ACPI_DEBUG" "SCHED_DEBUG" "LATENCYTOP" "DEBUG_PREEMPT"
+    _disable ACPI_DEBUG BLK_DEBUG_FS BT_DEBUGFS BT_FEATURE_DEBUG CFG80211_DEBUGFS CIFS_DEBUG CMA_DEBUGFS CRYPTO_DEV_CCP_DEBUGFS DEBUG_KERNEL DEBUG_RODATA_TEST DM_DEBUG DYNAMIC_DEBUG DYNAMIC_DEBUG_CORE IWLWIFI_DEBUG NETFS_DEBUG PM_DEBUG PNP_DEBUG_MESSAGES SHRINKER_DEBUG SND_DEBUG SUNRPC_DEBUG VIRTIO_DEBUG KFENCE SLUB_DEBUG RCU_TRACE SCHED_DEBUG DEBUG_MISC X86_DEBUG_FPU PM_ADVANCED_DEBUG PM_SLEEP_DEBUG DEBUG_WX HAVE_DEBUG_KMEMLEAK DEBUG_MEMORY_INIT SCHED_INFO SCHEDSTATS
+    _enable DEBUG_INFO_NONE EXPERT
   fi
 
   # TCP algorithms
