@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index b026eb1c4c7d..221842058009 100644
+index 33744e931489..e64312906399 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -559,17 +559,6 @@
@@ -102,13 +102,13 @@ index b47b3d0ce559..6ac658944390 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 25ec9cedbde6..ca0e4e5708ed 100644
+index 8bca26994e0c..ea06df79d532 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 1
- SUBLEVEL = 167
+ SUBLEVEL = 170
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Curry Ramen
@@ -373,7 +373,7 @@ index 5abe6c3d982a..11ba52e1bbe9 100644
  	native_write_cr4(cr4);
  }
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 19c9087e2b84..a935195176bb 100644
+index e702e273f0df..94c48d0c1b03 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -466,6 +466,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
@@ -459,7 +459,7 @@ index 339bf2195486..bb20d2fec12a 100644
  /* Used in PAGE_KERNEL_* macros which are reasonably used out-of-tree: */
  EXPORT_SYMBOL(__default_kernel_pte_mask);
 diff --git a/block/blk-mq.c b/block/blk-mq.c
-index a9697541d67f..fc86ba45613d 100644
+index f480b6ddba5e..7c5cc3a605fe 100644
 --- a/block/blk-mq.c
 +++ b/block/blk-mq.c
 @@ -1132,7 +1132,7 @@ static void blk_complete_reqs(struct llist_head *list)
@@ -1445,7 +1445,7 @@ index fadc6bbda27b..33d19d4db277 100644
  
  void tasklet_setup(struct tasklet_struct *t,
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index c6d9dec11b74..f4e8dfe7dbc4 100644
+index eaa2691caf49..f8a762bdfb2b 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -81,6 +81,9 @@
@@ -1687,10 +1687,10 @@ index 207fd22ad3bd..5bb7538b4f9b 100644
  	enum kobj_ns_type type = ops->type;
  	int error;
 diff --git a/lib/nlattr.c b/lib/nlattr.c
-index 86344df0ccf7..cc681bd99f98 100644
+index cf5f0dc3e47d..2e6a490fbfa8 100644
 --- a/lib/nlattr.c
 +++ b/lib/nlattr.c
-@@ -809,6 +809,8 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
+@@ -815,6 +815,8 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
  {
  	int minlen = min_t(int, count, nla_len(src));
  
@@ -2501,10 +2501,10 @@ index d3a2877c176f..48b0b053c401 100644
  
  unsigned long arch_mmap_rnd(void)
 diff --git a/net/core/dev.c b/net/core/dev.c
-index a97239cd1b3a..fe28fdedbc7b 100644
+index 87a252b13c5c..c4283cde92e1 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -5130,7 +5130,7 @@ int netif_rx(struct sk_buff *skb)
+@@ -5142,7 +5142,7 @@ int netif_rx(struct sk_buff *skb)
  }
  EXPORT_SYMBOL(netif_rx);
  
@@ -2513,7 +2513,7 @@ index a97239cd1b3a..fe28fdedbc7b 100644
  {
  	struct softnet_data *sd = this_cpu_ptr(&softnet_data);
  
-@@ -6769,7 +6769,7 @@ static void skb_defer_free_flush(struct softnet_data *sd)
+@@ -6781,7 +6781,7 @@ static void skb_defer_free_flush(struct softnet_data *sd)
  	}
  }
  

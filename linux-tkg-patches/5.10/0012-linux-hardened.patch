@@ -102,13 +102,13 @@ index e912a47765f3..69514ce4e99a 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index bceb0c9760a7..f4e5d198706f 100644
+index 42116a09d73d..05bef5214d5b 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 10
- SUBLEVEL = 252
+ SUBLEVEL = 254
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Dare mighty things
@@ -464,10 +464,10 @@ index a72009746067..03d876e61265 100644
  	struct list_head *cpu_list, local_list;
  
 diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 107c28ec23b8..0166b37d2c8f 100644
+index 9be577e7c357..747164233060 100644
 --- a/drivers/ata/libata-core.c
 +++ b/drivers/ata/libata-core.c
-@@ -4582,7 +4582,7 @@ void ata_qc_free(struct ata_queued_cmd *qc)
+@@ -4579,7 +4579,7 @@ void ata_qc_free(struct ata_queued_cmd *qc)
  	struct ata_port *ap;
  	unsigned int tag;
  
@@ -476,7 +476,7 @@ index 107c28ec23b8..0166b37d2c8f 100644
  	ap = qc->ap;
  
  	qc->flags = 0;
-@@ -4599,7 +4599,7 @@ void __ata_qc_complete(struct ata_queued_cmd *qc)
+@@ -4596,7 +4596,7 @@ void __ata_qc_complete(struct ata_queued_cmd *qc)
  	struct ata_port *ap;
  	struct ata_link *link;
  
@@ -1216,10 +1216,10 @@ index e51d75f5165b..d2e6f74b1975 100644
  #define TTY_MAGIC		0x5401
  
 diff --git a/include/linux/usb.h b/include/linux/usb.h
-index bf5f2ead49c4..02048e95e676 100644
+index 72937287c3fc..f622fc2b6bd4 100644
 --- a/include/linux/usb.h
 +++ b/include/linux/usb.h
-@@ -2035,6 +2035,17 @@ extern void usb_led_activity(enum usb_led_event ev);
+@@ -2039,6 +2039,17 @@ extern void usb_led_activity(enum usb_led_event ev);
  static inline void usb_led_activity(enum usb_led_event ev) {}
  #endif
  
@@ -1545,7 +1545,7 @@ index c9cd1f622a1f..5f610a8b2a62 100644
  		return err;
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 072fe9d6c47b..02b6fd1ba01c 100644
+index 531de2d1b3bf..949b28c8ab34 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -82,6 +82,7 @@
@@ -1680,7 +1680,7 @@ index 09229ad82209..6a02d63b135a 100644
  
  void tasklet_setup(struct tasklet_struct *t,
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index abe0f16d5364..a501bb64ff0c 100644
+index c2870c9cae14..ccda9d491485 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -103,32 +103,38 @@
@@ -2010,10 +2010,10 @@ index 73047e847e91..fa134cab8f29 100644
  	enum kobj_ns_type type = ops->type;
  	int error;
 diff --git a/lib/nlattr.c b/lib/nlattr.c
-index aa8fc4371e93..04acd28af873 100644
+index 247426c0af0d..c0d4bd7bb372 100644
 --- a/lib/nlattr.c
 +++ b/lib/nlattr.c
-@@ -781,6 +781,8 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
+@@ -803,6 +803,8 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
  {
  	int minlen = min_t(int, count, nla_len(src));
  
@@ -2693,7 +2693,7 @@ index 9e0c86555adf..55c0078ea1a1 100644
  
  unsigned long arch_mmap_rnd(void)
 diff --git a/net/core/dev.c b/net/core/dev.c
-index ab0b7df70351..0196028c1845 100644
+index 9e1e87536c1e..59e714516ae1 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
 @@ -4934,7 +4934,7 @@ int netif_rx_any_context(struct sk_buff *skb)

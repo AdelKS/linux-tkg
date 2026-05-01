@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index e88505e945d5..69361fde9ff3 100644
+index 811345669be4..dad161137863 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -631,17 +631,6 @@
@@ -102,13 +102,13 @@ index dcbb6f6caf6d..d9d2ea78cd4b 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 8b19f10c0d0f..facc628310c6 100644
+index a31dcebc60ba..983ee7f300a3 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 12
- SUBLEVEL = 79
+ SUBLEVEL = 85
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Baby Opossum Posse
@@ -306,7 +306,7 @@ index 3da645139748..f0856cb10207 100644
  	native_write_cr4(cr4);
  }
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index b54717e6fc60..62b854ff87be 100644
+index 87029ab6cf7b..610ee617b9ba 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -453,6 +453,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
@@ -689,7 +689,7 @@ index 2ac67e04a6fb..3340e13c959c 100644
 +
 +	  If unsure, say N.
 diff --git a/fs/overlayfs/super.c b/fs/overlayfs/super.c
-index 87a36c6eea5f..6d7c4aa55fe9 100644
+index c3d84eafde9f..a2186edafb00 100644
 --- a/fs/overlayfs/super.c
 +++ b/fs/overlayfs/super.c
 @@ -1483,7 +1483,9 @@ struct file_system_type ovl_fs_type = {
@@ -1060,7 +1060,7 @@ index f4b91b1857bf..1f571a1e5a1f 100644
  	  This option enables POSIX asynchronous I/O which may by used
  	  by some high performance threaded applications. Disabling
 diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
-index 5c60442e6702..86889ff22c0e 100644
+index eef59b9eccfa..cd609294c87b 100644
 --- a/io_uring/io_uring.c
 +++ b/io_uring/io_uring.c
 @@ -152,7 +152,7 @@ static void io_queue_sqe(struct io_kiocb *req);
@@ -1098,7 +1098,7 @@ index 1edaa4846a47..3c9c1ecd5ffe 100644
  		pr_err("audit: error setting audit state (%d)\n",
  		       audit_default);
 diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-index 76dfa9ab43a5..cc7c9ba40348 100644
+index b58833e99969..5a4d8c6680f4 100644
 --- a/kernel/bpf/core.c
 +++ b/kernel/bpf/core.c
 @@ -571,7 +571,7 @@ void bpf_prog_kallsyms_del_all(struct bpf_prog *fp)
@@ -1128,7 +1128,7 @@ index dac4df77e376..68bb3279b14f 100644
  
  /**
 diff --git a/kernel/events/core.c b/kernel/events/core.c
-index 814b6536b09d..8aab0f54f221 100644
+index bcedf9611cf4..4e92ebc78671 100644
 --- a/kernel/events/core.c
 +++ b/kernel/events/core.c
 @@ -462,8 +462,13 @@ static struct kmem_cache *perf_event_cache;
@@ -1145,7 +1145,7 @@ index 814b6536b09d..8aab0f54f221 100644
  
  /* Minimum for 512 kiB + 1 user control page */
  int sysctl_perf_event_mlock __read_mostly = 512 + (PAGE_SIZE / 1024); /* 'free' kiB per user */
-@@ -12888,7 +12893,7 @@ SYSCALL_DEFINE5(perf_event_open,
+@@ -12885,7 +12890,7 @@ SYSCALL_DEFINE5(perf_event_open,
  		return err;
  
  	/* Do we allow access to perf_event_open(2) ? */
@@ -1155,7 +1155,7 @@ index 814b6536b09d..8aab0f54f221 100644
  		return err;
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 55086df4d24c..fdf2948b42a5 100644
+index a01cf3a904bf..043b938e9962 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -84,6 +84,7 @@
@@ -1166,7 +1166,7 @@ index 55086df4d24c..fdf2948b42a5 100644
  #include <linux/oom.h>
  #include <linux/khugepaged.h>
  #include <linux/signalfd.h>
-@@ -2162,6 +2163,10 @@ __latent_entropy struct task_struct *copy_process(
+@@ -2173,6 +2174,10 @@ __latent_entropy struct task_struct *copy_process(
  	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
  		return ERR_PTR(-EINVAL);
  
@@ -1177,7 +1177,7 @@ index 55086df4d24c..fdf2948b42a5 100644
  	/*
  	 * Thread groups must share signals as well, and detached threads
  	 * can only be started up within the thread group.
-@@ -3315,6 +3320,12 @@ int ksys_unshare(unsigned long unshare_flags)
+@@ -3326,6 +3331,12 @@ int ksys_unshare(unsigned long unshare_flags)
  	if (unshare_flags & CLONE_NEWNS)
  		unshare_flags |= CLONE_FS;
  
@@ -1233,7 +1233,7 @@ index 00ff17635041..ab27c6928ba4 100644
  	softirq_vec[nr].action = action;
  }
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 79e6cb1d5c48..f80f6dec99de 100644
+index de58128fa521..a3f7df9da787 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -80,6 +80,9 @@
@@ -2323,7 +2323,7 @@ index 8d411cce0aed..45626d8a4f8a 100644
  
  static struct ctl_table ipv4_net_table[] = {
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 1d9e93a04930..2f7cf28c9425 100644
+index c498588c021d..82918fdf3ce2 100644
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
 @@ -83,6 +83,7 @@
@@ -2334,7 +2334,7 @@ index 1d9e93a04930..2f7cf28c9425 100644
  
  #define FLAG_DATA		0x01 /* Incoming frame contained data.		*/
  #define FLAG_WIN_UPDATE		0x02 /* Incoming ACK was a window update.	*/
-@@ -6619,7 +6620,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+@@ -6621,7 +6622,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
  		SKB_DR_SET(reason, TCP_RFC7323_PAWS);
  		goto discard_and_undo;
  	}
