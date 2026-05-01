@@ -26,6 +26,8 @@ plain '             `.-:///////:-.`'
 
 _where="$PWD" # track basedir as different Arch based distros are moving srcdir around
 
+source "$_where"/linux-tkg-config/prepare
+
 # Create BIG_UGLY_FROGMINER only on first run and save in it all settings
 if [ ! -e "$_where"/BIG_UGLY_FROGMINER ]; then
 
@@ -48,17 +50,18 @@ if [ ! -e "$_where"/BIG_UGLY_FROGMINER ]; then
   echo -e "_ispkgbuild=\"true\"\n_distro=\"Arch\"\n_where=\"$PWD\"" >> "$_where"/BIG_UGLY_FROGMINER
 
   source "$_where"/BIG_UGLY_FROGMINER
-  source "$_where"/linux-tkg-config/prepare
 
   _tkg_initscript
 fi
 
 source "$_where"/BIG_UGLY_FROGMINER
 
+_vanilla_tag=""
+_vanilla_mode && _vanilla_tag="vanilla-"
 if [ -n "$_custom_pkgbase" ]; then
   pkgbase="${_custom_pkgbase}"
 else
-  pkgbase=linux"${_basever}"-tkg-"${_cpusched}"${_compiler_name}
+  pkgbase="linux${_basever}-tkg-${_vanilla_tag}${_cpusched}${_compiler_name}"
 fi
 pkgname=("${pkgbase}" "${pkgbase}-headers")
 pkgver="${_basekernel}"."${_sub}"
