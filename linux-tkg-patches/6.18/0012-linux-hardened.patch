@@ -1,5 +1,5 @@
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 6c42061ca20e..f7242a38a81d 100644
+index ab4e03f91e74..8b0f65acbc73 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -669,17 +669,6 @@
@@ -102,13 +102,13 @@ index 7a637e87005f..15e206771816 100644
  	If enabled, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 287fc5830914..71aca1c686ef 100644
+index f1b9b5849b79..655c8d6d1c64 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 18
- SUBLEVEL = 20
+ SUBLEVEL = 26
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Baby Opossum Posse
@@ -145,10 +145,10 @@ index 61130b88964b..17c0a3dbb249 100644
  	  Kernel stack offset randomization is controlled by kernel boot param
  	  "randomize_kstack_offset=on/off", and this config chooses the default
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 6663ffd23f25..353e8466540c 100644
+index 840a945cb4ac..db4179cb58a1 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -1680,6 +1680,7 @@ config ARM64_SW_TTBR0_PAN
+@@ -1692,6 +1692,7 @@ config ARM64_SW_TTBR0_PAN
  	bool "Emulate Privileged Access Never using TTBR0_EL1 switching"
  	depends on !KCSAN
  	select ARM64_PAN
@@ -156,7 +156,7 @@ index 6663ffd23f25..353e8466540c 100644
  	help
  	  Enabling this option prevents the kernel from accessing
  	  user-space memory directly by pointing TTBR0_EL1 to a reserved
-@@ -2284,6 +2285,7 @@ config RELOCATABLE
+@@ -2296,6 +2297,7 @@ config RELOCATABLE
  config RANDOMIZE_BASE
  	bool "Randomize the address of the kernel image"
  	select RELOCATABLE
@@ -306,7 +306,7 @@ index 00daedfefc1b..a00d167fe5ce 100644
  	native_write_cr4(cr4);
  }
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 02d97834a1d4..3c7b08ec87e6 100644
+index 68053f4f2c9b..987b2c6a33b5 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -455,6 +455,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
@@ -553,7 +553,7 @@ index 000000000000..813db3f0b1cb
 +	usb_sysctl_table = NULL;
 +}
 diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index b6b0b8489523..82d2202d22a5 100644
+index 048cf28efd4e..4e8f19de342a 100644
 --- a/drivers/usb/core/usb.c
 +++ b/drivers/usb/core/usb.c
 @@ -72,6 +72,9 @@ MODULE_PARM_DESC(autosuspend, "default autosuspend delay");
@@ -566,7 +566,7 @@ index b6b0b8489523..82d2202d22a5 100644
  static bool match_endpoint(struct usb_endpoint_descriptor *epd,
  		struct usb_endpoint_descriptor **bulk_in,
  		struct usb_endpoint_descriptor **bulk_out,
-@@ -1217,6 +1220,9 @@ static int __init usb_init(void)
+@@ -1218,6 +1221,9 @@ static int __init usb_init(void)
  	usb_debugfs_init();
  
  	usb_acpi_register();
@@ -576,7 +576,7 @@ index b6b0b8489523..82d2202d22a5 100644
  	retval = bus_register(&usb_bus_type);
  	if (retval)
  		goto bus_register_failed;
-@@ -1256,6 +1262,8 @@ static int __init usb_init(void)
+@@ -1257,6 +1263,8 @@ static int __init usb_init(void)
  bus_notifier_failed:
  	bus_unregister(&usb_bus_type);
  bus_register_failed:
@@ -585,7 +585,7 @@ index b6b0b8489523..82d2202d22a5 100644
  	usb_acpi_unregister();
  	usb_debugfs_cleanup();
  out:
-@@ -1280,6 +1288,7 @@ static void __exit usb_exit(void)
+@@ -1281,6 +1289,7 @@ static void __exit usb_exit(void)
  	class_unregister(&usbmisc_class);
  	bus_unregister_notifier(&usb_bus_type, &usb_bus_nb);
  	bus_unregister(&usb_bus_type);
@@ -680,7 +680,7 @@ index 2ac67e04a6fb..3340e13c959c 100644
 +
 +	  If unsure, say N.
 diff --git a/fs/overlayfs/super.c b/fs/overlayfs/super.c
-index 43ee4c7296a7..527d709bd62d 100644
+index 0e971ea97580..f7c49dfb55ff 100644
 --- a/fs/overlayfs/super.c
 +++ b/fs/overlayfs/super.c
 @@ -1578,7 +1578,9 @@ struct file_system_type ovl_fs_type = {
@@ -814,10 +814,10 @@ index 37db92b3d6f8..873416ba884c 100644
  {
  	return true;
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 3e965c77fa1b..91c8e26d7d51 100644
+index 014cb04eefbe..687f1283f76b 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -4071,4 +4071,15 @@ static inline bool extensible_ioctl_valid(unsigned int cmd_a,
+@@ -4072,4 +4072,15 @@ static inline bool extensible_ioctl_valid(unsigned int cmd_a,
  	return true;
  }
  
@@ -944,10 +944,10 @@ index 0a46e4054dec..99c733852fb2 100644
  
  /* Each of a tty's open files has private_data pointing to tty_file_private */
 diff --git a/include/linux/usb.h b/include/linux/usb.h
-index 32e17626dfdc..e1a34906a0ec 100644
+index 2511f1e5b114..e50cc061c1d0 100644
 --- a/include/linux/usb.h
 +++ b/include/linux/usb.h
-@@ -2104,6 +2104,17 @@ extern void usb_led_activity(enum usb_led_event ev);
+@@ -2110,6 +2110,17 @@ extern void usb_led_activity(enum usb_led_event ev);
  static inline void usb_led_activity(enum usb_led_event ev) {}
  #endif
  
@@ -1056,7 +1056,7 @@ index cab3ad28ca49..7eeb0a8878b5 100644
  	  This option enables POSIX asynchronous I/O which may by used
  	  by some high performance threaded applications. Disabling
 diff --git a/io_uring/io_uring.c b/io_uring/io_uring.c
-index d10a38c9dbfb..3d8e3b1f0464 100644
+index 99cd5bcac201..436496abad02 100644
 --- a/io_uring/io_uring.c
 +++ b/io_uring/io_uring.c
 @@ -153,7 +153,7 @@ static __read_mostly DEFINE_STATIC_KEY_DEFERRED_FALSE(io_key_has_sqarray, HZ);
@@ -1094,7 +1094,7 @@ index 26a332ffb1b8..c30adeb1650b 100644
  		pr_err("audit: error setting audit state (%d)\n",
  		       audit_default);
 diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
-index c2278f392e93..be195342dcdf 100644
+index 8de006d388f6..cb142e06b98f 100644
 --- a/kernel/bpf/core.c
 +++ b/kernel/bpf/core.c
 @@ -543,7 +543,7 @@ void bpf_prog_kallsyms_del_all(struct bpf_prog *fp)
@@ -1124,7 +1124,7 @@ index 829f49ae07b9..5bb7ee4028ad 100644
  
  /**
 diff --git a/kernel/events/core.c b/kernel/events/core.c
-index b7e73ac3e512..929184036108 100644
+index 6b6fea8d33e0..721a868b4197 100644
 --- a/kernel/events/core.c
 +++ b/kernel/events/core.c
 @@ -463,8 +463,13 @@ static struct kmem_cache *perf_event_cache;
@@ -1141,7 +1141,7 @@ index b7e73ac3e512..929184036108 100644
  
  /* Minimum for 512 kiB + 1 user control page. 'free' kiB per user. */
  static int sysctl_perf_event_mlock __read_mostly = 512 + (PAGE_SIZE / 1024);
-@@ -13478,7 +13483,7 @@ SYSCALL_DEFINE5(perf_event_open,
+@@ -13475,7 +13480,7 @@ SYSCALL_DEFINE5(perf_event_open,
  		return err;
  
  	/* Do we allow access to perf_event_open(2) ? */
@@ -1229,7 +1229,7 @@ index 77198911b8dd..1c508ce336ae 100644
  	softirq_vec[nr].action = action;
  }
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index cb6196e3fa99..1b1ab180ba4d 100644
+index 970525e6c76c..dc229a9b1a7a 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -23,6 +23,10 @@
@@ -2690,7 +2690,7 @@ index 6b34ba19358d..d83e715c9d40 100644
  	  secure!
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 133dfa16308a..690652c32a4e 100644
+index 010c398f6a70..6c547d68a411 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
 @@ -49,6 +49,8 @@ static bool sec_mismatch_warn_only = true;

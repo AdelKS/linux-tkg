@@ -102,13 +102,13 @@ index 7f75767a24f1..8a54bc818612 100644
  	If set, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index 8fc3ffa96622..221176c2e0c0 100644
+index 3937e96d463f..fe47b27401f0 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 5
  PATCHLEVEL = 15
- SUBLEVEL = 202
+ SUBLEVEL = 204
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Trick or Treat
@@ -361,7 +361,7 @@ index 29fea180a665..28d86671b089 100644
 -extern unsigned long align_vdso_addr(unsigned long);
  #endif /* _ASM_X86_ELF_H */
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 96643de567d8..b697dcf38d5a 100644
+index d008416bd083..f856f16fab6d 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
 @@ -410,6 +410,7 @@ EXPORT_SYMBOL_GPL(native_write_cr4);
@@ -472,10 +472,10 @@ index 48827708200b..99ab22190642 100644
  	blk_complete_reqs(this_cpu_ptr(&blk_cpu_done));
  }
 diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 3df057d381a7..79029d6aa4a8 100644
+index acc78416be8e..d24280853680 100644
 --- a/drivers/ata/libata-core.c
 +++ b/drivers/ata/libata-core.c
-@@ -4607,7 +4607,7 @@ void ata_qc_free(struct ata_queued_cmd *qc)
+@@ -4604,7 +4604,7 @@ void ata_qc_free(struct ata_queued_cmd *qc)
  	struct ata_port *ap;
  	unsigned int tag;
  
@@ -484,7 +484,7 @@ index 3df057d381a7..79029d6aa4a8 100644
  	ap = qc->ap;
  
  	qc->flags = 0;
-@@ -4624,7 +4624,7 @@ void __ata_qc_complete(struct ata_queued_cmd *qc)
+@@ -4621,7 +4621,7 @@ void __ata_qc_complete(struct ata_queued_cmd *qc)
  	struct ata_port *ap;
  	struct ata_link *link;
  
@@ -1158,10 +1158,10 @@ index 168e57e40bbb..d22dccc674b2 100644
  #define TTY_MAGIC		0x5401
  
 diff --git a/include/linux/usb.h b/include/linux/usb.h
-index 671d8845bd46..2862560b1a17 100644
+index ed5cb60057ba..fc03c34d77c9 100644
 --- a/include/linux/usb.h
 +++ b/include/linux/usb.h
-@@ -2042,6 +2042,17 @@ extern void usb_led_activity(enum usb_led_event ev);
+@@ -2046,6 +2046,17 @@ extern void usb_led_activity(enum usb_led_event ev);
  static inline void usb_led_activity(enum usb_led_event ev) {}
  #endif
  
@@ -1467,7 +1467,7 @@ index 156221bd5661..a3193cca608f 100644
  		return err;
  
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 2c99d39e2bc0..24e16d1e30b2 100644
+index e1b291e5e103..73ac1dc10e13 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -82,6 +82,7 @@
@@ -1602,7 +1602,7 @@ index d63d827da2d6..e97f1cca668d 100644
  
  void tasklet_setup(struct tasklet_struct *t,
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index eaf9dd6a2f12..4e8e7c73adc7 100644
+index ac16c3084c96..45024d52d2d2 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
 @@ -105,12 +105,18 @@
@@ -1893,10 +1893,10 @@ index b6ccb4cced63..cf6126ab8549 100644
  	enum kobj_ns_type type = ops->type;
  	int error;
 diff --git a/lib/nlattr.c b/lib/nlattr.c
-index 73635bdb0062..8cc82ca504a0 100644
+index cf5f0dc3e47d..2e6a490fbfa8 100644
 --- a/lib/nlattr.c
 +++ b/lib/nlattr.c
-@@ -793,6 +793,8 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
+@@ -815,6 +815,8 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
  {
  	int minlen = min_t(int, count, nla_len(src));
  
@@ -2188,7 +2188,7 @@ index 315e83f5daea..9723e3315492 100644
  static int __init setup_slab_nomerge(char *str)
  {
 diff --git a/mm/slub.c b/mm/slub.c
-index 97ac0c7da0f0..3fc73b941ba6 100644
+index 97ac0c7da0f0..f549b99b7869 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
 @@ -189,6 +189,12 @@ static inline bool kmem_cache_debug(struct kmem_cache *s)
@@ -2558,17 +2558,18 @@ index 97ac0c7da0f0..3fc73b941ba6 100644
  
  	if (!calculate_sizes(s, -1))
  		goto error;
-@@ -4505,6 +4631,9 @@ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
+@@ -4505,6 +4631,10 @@ void __check_heap_object(const void *ptr, unsigned long n, struct page *page,
  		offset -= s->red_left_pad;
  	}
  
-+	if (!is_kfence)
++	if (!is_kfence) {
 +		check_canary(s, (void *)ptr - offset, s->random_active);
++	}
 +
  	/* Allow address range falling entirely within usercopy region. */
  	if (offset >= s->useroffset &&
  	    offset - s->useroffset <= s->usersize &&
-@@ -4538,7 +4667,11 @@ size_t __ksize(const void *object)
+@@ -4538,7 +4668,11 @@ size_t __ksize(const void *object)
  	page = virt_to_head_page(object);
  
  	if (unlikely(!PageSlab(page))) {
@@ -2627,7 +2628,7 @@ index af6c9bce8314..1e56e5a1180e 100644
  
  unsigned long arch_mmap_rnd(void)
 diff --git a/net/core/dev.c b/net/core/dev.c
-index de52fc130486..d0e7ac2466a7 100644
+index 4aa21422e1d0..0249bd25b5d6 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
 @@ -5080,7 +5080,7 @@ int netif_rx_any_context(struct sk_buff *skb)
