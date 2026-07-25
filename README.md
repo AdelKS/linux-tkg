@@ -6,12 +6,10 @@ This repository provides scripts to automatically download, patch and compile an
 
 - [Linux-tkg](#linux-tkg)
   - [Important information](#important-information)
-  - [Customization options](#customization-options)
-    - [Default tweaks](#default-tweaks)
+  - [Customize linux-tkg](#customize-linux-tkg)
     - [CPU task schedulers](#cpu-task-schedulers)
       - [Runtime scheduler swap: sched-ext](#runtime-scheduler-swap-sched-ext)
       - [Build-time scheduler swap](#build-time-scheduler-swap)
-    - [Optional tweaks](#optional-tweaks)
     - [Bring your own patches](#bring-your-own-patches)
     - [Customize kernel config](#customize-kernel-config)
   - [Install procedure](#install-procedure)
@@ -26,31 +24,50 @@ This repository provides scripts to automatically download, patch and compile an
 - **If your distro isn't using systemd, please set _configfile="running-kernel" in customization.cfg or you might end up with a non-bootable kernel**
 - Building recent linux kernels with GCC will require ~20-25GB of disk space. Using llvm/clang, LTO, ccache and/or enabling more drivers in the defconfig will push that requirement higher, so make sure you have enough free space on the volume you're using to build.
 - Nvidia drivers might need to be patched to cleanly build/work on latest kernels.
-  [Frogging-Family nvidia-all](https://github.com/Frogging-Family/nvidia-all) can help you with that :frog:
+  [Frogging-Family nvidia-all](https://github.com/Frogging-Family/nvidia-all) can help you with that.
 
 ## Customization options
 
-Most customizations can be toggled by:
+linux-tkg works interactively out of the box, but can also be fully configured for repeatable builds.
 
-- Editing the variables in [customization.cfg](./customization.cfg), those values can be overridden by (in increasing priority)
-  - An external config file: given by the `_EXT_CONFIG_PATH` variable: in the above file or in the environment, defaults to `~/.config/frogminer/linux-tkg.cfg`.
-  - Setting the variables in the shell environment.
-- Following the interactive install script (it does _not_ prompt for all of them).
+Configuration priority, from highest to lowest:
 
-### Default tweaks
+1. Environment variables
+2. An external config file set through `_EXT_CONFIG_PATH` (defaults to `~/.config/frogminer/linux-tkg.cfg`)
+3. The repository's [`customization.cfg`](./customization.cfg)
 
-These tweaks cannot be disabled with a toggle and come default-enabled.
+The external config only needs to contain values you want to override. Options with an interactive selector are prompted when left empty.
 
-- Memory management and swapping tweaks
-- Scheduling tweaks
-- `CFS/EEVDF` tweaks
-- Using the ["Cake"](https://www.bufferbloat.net/projects/codel/wiki/CakeTechnical/) network queue management system
-- Using `vm.max_map_count=16777216` by default
-- Cherry-picked patches from [Clear Linux's patchset](https://github.com/clearlinux-pkgs/linux)
-- Default `intel_pstate=passive` kernel option for Intel CPUs
-  - Default frequency scaling aggressiveness with kernel ≥ 5.5 is conservative, which results in stutters and poor performance in low/medium load scenarios (for better power saving).
-  - `intel_pstate=passive` make's use of the `acpi_cpufreq` governor passthrough, keeping full support for turbo frequencies.
-  - It's combined with our aggressive `ondemand` governor by default for good performance while still preserving power.
+> [!TIP]
+> **🐸 Major tweaks — Build your kernel, your way.**
+>
+> These options have the biggest impact on how your kernel is built and behaves.
+
+- `_cpusched` selects EEVDF/CFS, BORE, PDS/BMQ, or legacy MuQSS/Undead PDS as the [build-time CPU scheduler](#build-time-scheduler-swap) (prompted by default).
+- `_compiler` selects GCC (default) or [LLVM](https://docs.kernel.org/kbuild/llvm.html).
+- `_lto_mode` enables Thin or Full LTO for LLVM builds (disabled by default).
+- `_compileroptlevel` selects `-O2` (default), `-O3` for potentially higher performance, or `-Os` for a smaller kernel.
+- `_processor_opt` tunes the build for a specific CPU microarchitecture (prompted by default).
+- `_glitched_base`, `_zenify`, `_clear_patches`, and `_misc_adds` control the main optional patchsets (enabled by default), mixing selected [Zen](https://github.com/zen-kernel/zen-kernel) and [Clear Linux](https://github.com/clearlinux-pkgs/linux) tweaks with linux-tkg's signature Glitched Base flavor.
+- `_default_cpu_gov` selects the default [CPU frequency governor](https://docs.kernel.org/admin-guide/pm/cpufreq.html) (`ondemand` by default, or `schedutil` above 32 threads).
+- `_aggressive_ondemand` enables linux-tkg's tuned `ondemand` governor for supported schedulers (enabled by default).
+- `_timer_freq` sets the kernel timer frequency (prompted with a scheduler-specific default).
+- `_custom_commandline` embeds `intel_pstate=passive` by default.
+- `_preempt_rt` enables [real-time preemption](https://docs.kernel.org/core-api/real-time/) and limits the available CPU schedulers (disabled by default).
+- `_kernel_on_diet` uses linux-tkg's curated module list, while `_modprobeddb` uses [Modprobed-db](https://github.com/graysky2/modprobed-db) to keep only detected modules. Both reduce build time and kernel size, but can omit required modules.
+- `_vanilla` provides a cleaner upstream-style base by skipping extra linux-tkg patchsets and using the upstream CPU scheduler (disabled by default).
+- [NTsync](https://docs.kernel.org/6.14/userspace-api/ntsync.html) can improve gaming performance through faster Windows synchronization and pairs especially well with [wine-tkg](https://github.com/Frogging-Family/wine-tkg-git). It is built into Linux 6.14+; `_ntsync` only backports it to 6.8–6.13. Older Fsync variants remain for legacy setups, while Futex2 is deprecated.
+
+> [!NOTE]
+> **Built-in defaults**
+>
+> Some tweaks are grouped instead of having individual toggles, including selected memory-management, scheduling, CFS/EEVDF, CAKE, and a raised `vm.max_map_count=2147483642` default. Many of their tunables can still be adjusted at runtime through `sysctl` or subsystem-specific configuration; see [AdelKS's Linux Gaming Guide](https://github.com/AdelKS/LinuxGamingGuide) for more gaming tips and tuning.
+>
+> On Arch Linux, `/usr/lib/sysctl.d/10-arch.conf` overrides the kernel's `vm.max_map_count` default with `1048576`; see the [ArchWiki gaming guide](https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count) to raise it persistently.
+>
+> Use `_vanilla=true` to stay close to upstream, which is useful for isolating regressions. The build can still be tailored with `_configfile`, `*.myfrag` config fragments, and user patches.
+
+See [`customization.cfg`](./customization.cfg) for all options, defaults, and caveats.
 
 ### CPU task schedulers
 
@@ -81,24 +98,6 @@ Alternative build-time default schedulers are optionally available in linux-tkg:
 - Undead PDS : TkG's port of the pre-Project C "PDS-mq" scheduler by Alfred Chen. While PDS-mq got dropped with kernel 5.1 in favor of its BMQ evolution/rework, it wasn't on par with PDS-mq in gaming. "U" PDS still performed better in some cases than other schedulers, so it's been kept undead for a while.
 
 These alternative schedulers may offer a better performance/latency ratio in some scenarios. The availability of each scheduler depends on the chosen Kernel version: the script will display what's available on a per-version basis.
-
-### Optional tweaks
-
-The `customization.cfg` file offers many toggles for extra tweaks:
-
-- [NTsync](https://repo.or.cz/linux/zf.git/shortlog/refs/heads/ntsync5), `Fsync` and `Futex2`(deprecated) support: can improve the performance in games, needs a patched wine like [wine-tkg](https://github.com/Frogging-Family/wine-tkg-git)
-- Tune the compiled code to to a specified CPU
-- Compile with GCC or Clang with optional `O2`/`O3` and `LTO` (Clang only) optimizations.
-- Build a kernel with less modules: reduces compile times, tmpfs/RAM space needed and produces a smaller kernel
-  - Using `_kernel_on_diet` option: uses a stripped down list of modules to build
-  - Advanced users: using your own module list **NOT recommended**
-    - Using `_modprobeddb` and `_modprobeddb_db_path` options
-    - [Modprobed-db](https://github.com/graysky2/modprobed-db) can help build the list: make sure to read [thoroughly about it first](https://wiki.archlinux.org/index.php/Modprobed-db) as a list too short list can produce unbootable kernels or have runtime issues because of missing modules.
-- "Zenify" patchset using core blk, mm and scheduler tweaks from Zen
-- `ZFS` FPU symbols (<5.9)
-- Overrides for missing ACS capabilities
-- [OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB) support
-- Read the file for more information: each variable is documented with comment blocks above it.
 
 ### Bring your own patches
 
@@ -220,4 +219,3 @@ cd linux-tkg
 # Optional: edit the "customization.cfg" file
 ./install.sh install
 ```
-
