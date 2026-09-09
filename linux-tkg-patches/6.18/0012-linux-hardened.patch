@@ -102,13 +102,13 @@ index 7a637e87005f..15e206771816 100644
  	If enabled, provide RFC2861 behavior and time out the congestion
  	window after an idle period.  An idle period is defined at
 diff --git a/Makefile b/Makefile
-index de74f98fca64..4d52b0006b85 100644
+index 52950c3d861c..aee6855d1bfe 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -2,7 +2,7 @@
  VERSION = 6
  PATCHLEVEL = 18
- SUBLEVEL = 49
+ SUBLEVEL = 50
 -EXTRAVERSION =
 +EXTRAVERSION = -hardened1
  NAME = Baby Opossum Posse
@@ -1545,7 +1545,7 @@ index 32b65073d0cc..614bb7f4793f 100644
  	  Generate a warning if any W+X mappings are found at boot.
  
 diff --git a/mm/internal.h b/mm/internal.h
-index f5c0d927924d..e8c08c2222df 100644
+index ef42eee87c7b..5d5646c46ae2 100644
 --- a/mm/internal.h
 +++ b/mm/internal.h
 @@ -780,6 +780,9 @@ static inline struct folio *page_rmappable_folio(struct page *page)
@@ -1582,7 +1582,7 @@ index 10e6802a2edf..01f8700fafc6 100644
  
  	/* We encountered a memory safety error, taint the kernel! */
 diff --git a/mm/mm_init.c b/mm/mm_init.c
-index d2d915984611..bb00d2b10ea2 100644
+index 922493a35a28..61caddad4426 100644
 --- a/mm/mm_init.c
 +++ b/mm/mm_init.c
 @@ -2019,6 +2019,7 @@ static void __init deferred_free_pages(unsigned long pfn,
@@ -1601,7 +1601,7 @@ index d2d915984611..bb00d2b10ea2 100644
  		__free_pages_core(page, 0, MEMINIT_EARLY);
  	}
  }
-@@ -2515,6 +2517,7 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
+@@ -2518,6 +2520,7 @@ void __init memblock_free_pages(struct page *page, unsigned long pfn,
  
  	/* pages were reserved and not allocated */
  	clear_page_tag_ref(page);
@@ -1628,7 +1628,7 @@ index b29b31a29ef6..c49a6c353dbd 100644
  		mm->brk = brk;
  		goto success;
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 775e02b797a3..56a402ebcd91 100644
+index af37e0c2d6f8..d13bc2089376 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -213,6 +213,15 @@ EXPORT_PER_CPU_SYMBOL(_numa_mem_);
